@@ -7,6 +7,7 @@ buildscript {
   }
 }
 
+apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
@@ -14,15 +15,30 @@ apply plugin: 'signing'
 apply plugin: 'release'
 
 group = 'net.coacoas.gradle'
-archivesBaseName = 'gradle-ensime'
+archivesBaseName = 'ensime-gradle'
 
 repositories {  
   mavenCentral() 
 }
 
+// Write the plugin's classpath to a file to share with the tests
+task createClasspathManifest {
+  def outputDir = file("$buildDir/$name")
+
+  inputs.files sourceSets.main.runtimeClasspath
+  outputs.dir outputDir
+
+  doLast {
+    outputDir.mkdirs()
+    file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+  }
+}
+
 dependencies {
-  compile     gradleApi()
-  testCompile "junit:junit:4.12"
+  testCompile gradleTestKit()
+  testCompile "org.spockframework:spock-core:1.0-groovy-2.3"
+
+  testRuntime files(createClasspathManifest)
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -43,22 +59,20 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
 tasks.withType(JavaCompile) {
   targetCompatibility = '1.6'
   sourceCompatibility = '1.6'
-}   
+}
 
-
-
-artifacts { 
-  archives jar 
+artifacts {
+  archives jar
   archives sourcesJar
   archives javadocJar
   archives groovydocJar
 }
 
 test {
-    dependsOn jar
+  dependsOn jar
 }
 
-signing { 
+signing {
   required { gradle.taskGraph.hasTask("uploadArchives") }
   sign configurations.archives
 }

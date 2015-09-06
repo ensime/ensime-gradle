@@ -1,8 +1,6 @@
 package net.coacoas.gradle.plugins
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskAction
 
 /*
@@ -13,7 +11,7 @@ class EnsimeTask extends DefaultTask {
   private static final String DEF_ENSIME_CACHE = "/.ensime_cache.d"
 
   @TaskAction
-  void writeFile() {
+  public void writeFile() {
     // processing targetFile ...
     String ensimeFileName = (
       project.extensions.ensime.targetFile.empty ?
@@ -29,14 +27,6 @@ class EnsimeTask extends DefaultTask {
 
     // start to put the ensime file togther ...
     Map<String, Object> properties = new LinkedHashMap<String, Object>()
-
-    /* TODO - make use-sbt work (it is not a string)
-    // use-sbt ...
-    if(!project.extensions.ensime.useSbt.empty) {
-      properties.put("use-sbt", project.extensions.ensime.useSbt)
-      project.logger.debug("EnsimeTask: Writing use-sbt: ${project.extensions.ensime.useSbt}")
-    }
-    */
 
     // root-dir ...
     assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
@@ -63,8 +53,9 @@ class EnsimeTask extends DefaultTask {
     project.logger.debug("EnsimeTask: Writing name: ${project.name}")
 
     // java-home ...
-    assert !project.extensions.ensime.javaHome.empty, "ensime.javaHome must be not empty"
-    properties.put("java-home", project.extensions.ensime.javaHome)
+    String javaHome = project.extensions.ensime.javaHome ?: System.getProperty('java.home')
+    assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
+    properties.put("java-home", javaHome)
     project.logger.debug("EnsimeTask: Writing java-home: ${project.extensions.ensime.javaHome}")
 
     // java-flags ...

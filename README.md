@@ -32,14 +32,3 @@ Each time the task is executed, the .ensime file will be regenerated.
 
 To see the plugin in action you can also clone this repo and then run `gradle build` to build the plugin and then `cd src/test/sample/scala` and run `gradle clean build ensime`.
 
-## Next Steps
-
-At this point, I think it would be good to clean this up and get it added to the Gradle Plugin Repository.  If an issue exists keeping this from a 1.0 version, let me know so it can get fixed. 
-
-## Updates
-
-### 0.11
-
-*  Thanks to rolandtritsch for this update!
-*  Fixes Issue #6: Generates .ensime files for Android development
-*  Back to supporting Java 6
