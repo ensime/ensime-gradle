@@ -1,10 +1,7 @@
 package net.coacoas.gradle.plugins
-
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
-
 /*
  * Implementation of the 'ensime' task.
  */
@@ -13,7 +10,7 @@ class EnsimeTask extends DefaultTask {
   private static final String DEF_ENSIME_CACHE = "/.ensime_cache.d"
 
   @TaskAction
-  void writeFile() {
+  public void writeFile() {
     // processing targetFile ...
     String ensimeFileName = (
       project.extensions.ensime.targetFile.empty ?
@@ -29,14 +26,6 @@ class EnsimeTask extends DefaultTask {
 
     // start to put the ensime file togther ...
     Map<String, Object> properties = new LinkedHashMap<String, Object>()
-
-    /* TODO - make use-sbt work (it is not a string)
-    // use-sbt ...
-    if(!project.extensions.ensime.useSbt.empty) {
-      properties.put("use-sbt", project.extensions.ensime.useSbt)
-      project.logger.debug("EnsimeTask: Writing use-sbt: ${project.extensions.ensime.useSbt}")
-    }
-    */
 
     // root-dir ...
     assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
@@ -63,8 +52,10 @@ class EnsimeTask extends DefaultTask {
     project.logger.debug("EnsimeTask: Writing name: ${project.name}")
 
     // java-home ...
-    assert !project.extensions.ensime.javaHome.empty, "ensime.javaHome must be not empty"
-    properties.put("java-home", project.extensions.ensime.javaHome)
+    getLogger().info("Using extension ${project.extensions.ensime}")
+    String javaHome = project.extensions.ensime.javaHome.absolutePath
+    assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
+    properties.put("java-home", javaHome)
     project.logger.debug("EnsimeTask: Writing java-home: ${project.extensions.ensime.javaHome}")
 
     // java-flags ...
@@ -90,15 +81,22 @@ class EnsimeTask extends DefaultTask {
       project.logger.debug("EnsimeTask: Writing compiler-args: ${project.extensions.ensime.compilerArgs}")
     }
 
+    Collection<Project> subprojects = project.allprojects.findAll { prj ->
+      boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
+              prj.plugins.hasPlugin('java')
+      boolean notSupported = prj.plugins.hasPlugin('groovy')
+
+      project.logger.debug("Checking project $prj")
+      project.logger.debug("Has plugins: ${prj.plugins.collect{it.class.name}}")
+      supported && !notSupported
+    }
+    project.logger.info("Configuring subprojects $subprojects")
+
     // process subprojects ...
-    properties.put("subprojects", project.allprojects.collect {
-      if(it.plugins.hasPlugin("scala")) {
-        new EnsimeScalaModule(it).settings()
-      } else if(it.plugins.hasPlugin("jp.leafytree.android-scala")) {
-        new EnsimeAndroidModule(it).settings()
-      } else {
-        assert false : "Either the Scala or the Android plugin needs to be configured!"
-      }
+    properties.put("subprojects", subprojects.collect { subproject ->
+      subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
+              new EnsimeAndroidModule(subproject).settings() :
+              new SubprojectModule(subproject).settings()
     })
 
     // write and format the file ...
