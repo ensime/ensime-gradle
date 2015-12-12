@@ -11,18 +11,9 @@ class EnsimeTask extends DefaultTask {
 
   @TaskAction
   public void writeFile() {
-    // processing targetFile ...
-    String ensimeFileName = (
-      project.extensions.ensime.targetFile.empty ?
-      project.projectDir.absolutePath + DEF_ENSIME_FILE :
-      project.extensions.ensime.targetFile
-    )
-    File ensimeFile = new File(ensimeFileName)
-    if(!ensimeFile.parentFile.exists()) {
-      boolean wasAbleToCreateEnsimeFileDir = ensimeFile.parentFile.mkdirs()
-      assert wasAbleToCreateEnsimeFileDir : "Failed to mkdirs for ensime file: ${ensimeFileName}"
-    }
-    project.logger.debug("EnsimeTask: Writing ensime configuration to ${ensimeFileName} ...")
+    project.logger.info("Ensime Model: ${project.extensions.ensime}")
+
+    File outputFile = ensimeFile(project.extensions.ensime.targetFile)
 
     // start to put the ensime file togther ...
     Map<String, Object> properties = new LinkedHashMap<String, Object>()
@@ -33,11 +24,9 @@ class EnsimeTask extends DefaultTask {
     project.logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
 
     // cache-dir ...
-    String ensimeCacheDir = (
-      project.extensions.ensime.cacheDir.empty ?
-      project.projectDir.absolutePath + DEF_ENSIME_CACHE :
-      project.extensions.ensime.cacheDir
-    )
+      String ensimeCacheDir = project.extensions.ensime.cacheDir.empty ?
+              project.projectDir.absolutePath + DEF_ENSIME_CACHE :
+              project.extensions.ensime.cacheDir
     File ensimeCacheDirFile = new File(ensimeCacheDir)
     if(!ensimeCacheDirFile.exists()) {
       boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
@@ -100,6 +89,23 @@ class EnsimeTask extends DefaultTask {
     })
 
     // write and format the file ...
-    ensimeFile.write(SExp.format(properties))
+    outputFile.write(SExp.format(properties))
+  }
+
+  /**
+   * Returns the lcoation for the .ensime file and ensures that the parent directory is created.
+   * @param targetFile
+   * @return
+   */
+  File ensimeFile(String targetFile) {
+    String fileName = targetFile.empty ?
+            project.projectDir.absolutePath + DEF_ENSIME_FILE :
+            project.extensions.ensime.targetFile
+    File file = new File(fileName)
+    if(!file.parentFile.exists()) {
+      assert file.parentFile.mkdirs() : "Failed to mkdirs for ensime file: ${fileName}"
+    }
+    project.logger.debug("EnsimeTask: Writing ensime configuration to ${fileName} ...")
+    file
   }
 }

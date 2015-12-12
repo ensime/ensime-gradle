@@ -29,18 +29,19 @@ class Ensime implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
-    if (!project.plugins.hasPlugin(Ensime)) {
-      project.extensions.create(TASK_NAME, EnsimeModel)
-      project.tasks.create(TASK_NAME, EnsimeTask)
+    project.with {
+      if (!plugins.hasPlugin(Ensime)) {
+        extensions.create(TASK_NAME, EnsimeModel)
+        tasks.create(TASK_NAME, EnsimeTask)
 
-      project.afterEvaluate {
-        // Once the evaluation has occurred, we can inspect the
-        // configurations to get the configured Scala version for the project
-        project.extensions.ensime.scalaVersion = getScalaVersion(project)
-        project.extensions.ensime.javaHome = getJavaHome(project)
-        log.fine("Ensime model populated as ${project.extensions.ensime}")
+        afterEvaluate {
+          // Once the evaluation has occurred, we can inspect the
+          // configurations to get the configured Scala version for the project
+          extensions.ensime.scalaVersion = getScalaVersion(project)
+          extensions.ensime.javaHome = getJavaHome(project)
+          log.fine("Ensime model populated as ${extensions.ensime}")
+        }
       }
-
     }
   }
 

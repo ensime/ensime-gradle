@@ -7,6 +7,8 @@ import spock.lang.Specification
 public class SimpleProjectTest extends Specification implements ProjectSpecification {
     @Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
 
+    final static def supportedVersions = ['2.1', '2.6', '2.9']
+
     def setup() {
         setupProject(testProjectDir)
     }
@@ -28,12 +30,13 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
 
         when:
         def result = GradleRunner.create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--debug')
                 .build()
 
         then:
-        result.standardOutput.contains("Using Scala version 2.10.5")
+        result.output.contains("Using Scala version 2.10.5")
         File ensime = new File(testProjectDir.root, '.ensime')
         ensime.exists()
         List<String> configuration = ensime.readLines()
@@ -43,6 +46,9 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         configuration.contains(javaVersion)
 
         configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.5\.jar"\)/ }
+
+        where:
+        gradleVersion << supportedVersions
     }
 
     def "Defaults with Java-only plugin"() {
@@ -59,12 +65,15 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
                 .build()
 
         then:
-        result.standardOutput.contains("Using Scala version 2.11.7")
+        result.output.contains("Using Scala version 2.11.7")
         File ensime = new File(testProjectDir.root, '.ensime')
         ensime.exists()
         String configuration = ensime.readLines()
         configuration.contains(":scala-version \"2.11.7\"")
         configuration.contains(":java-home \"${javaHome()}\"")
+
+        where:
+        gradleVersion << supportedVersions
     }
 
     /***
