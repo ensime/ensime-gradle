@@ -1,8 +1,10 @@
 **/.*
 !.gitignore
 !.travis.yml
+!.bintray
 /bin
 **/build/
 *.log
 *.iml
 atlassian-ide-plugin.xml
+/test

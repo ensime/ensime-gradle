@@ -4,3 +4,12 @@ jdk:
   - oraclejdk7
   - openjdk7
   - openjdk6
+deploy:
+  provider: bintray
+  file: ".bintray"
+  skip-cleanup: true
+  user: coacoas
+  key:
+    secure: QckxXkKuILAg9q80FtQGuLE+ST2+yTa8yqCd8cnKMmkQdT43GR8ZcoAPo2OM83Q8+sFfA5sN4UEgWSM5lZH/QXb43tm/CSdjXrKmCzaq1UUa9wFzpRCRwKvCecYeOrNb3rtvVUFSlueqzr/BKasXo/vjTom3UdQJf3DceMs8wYA=
+  on:
+    jdk: openjdk6
