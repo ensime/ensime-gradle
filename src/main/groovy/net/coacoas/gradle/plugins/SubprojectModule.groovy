@@ -1,8 +1,9 @@
 package net.coacoas.gradle.plugins
-
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
-
+import org.gradle.api.specs.NotSpec
+import org.gradle.api.specs.Spec
 /**
  * Creates the subproject configuration for a Scala/Java project. Android projects will use EnsimeAndroidModule
  */
@@ -13,18 +14,33 @@ class SubprojectModule {
         this.project = project
     }
 
-    List<String> getProjectDependencies() {
-        project.configurations.testRuntime.getAllDependencies().findAll {
-            it instanceof ProjectDependency
-        }.dependencyProject.collect { it.name }
+    Spec<Dependency> isProject = new Spec<Dependency>() {
+        public boolean isSatisfiedBy(Dependency d) {
+            d instanceof ProjectDependency
+        }
     }
 
-    List<String> getSourceSets() {
+    List<String> getProjectDependencies() {
+        project.configurations.testRuntime
+                .allDependencies
+                .findAll { it instanceof ProjectDependency }
+                .collect { it.dependencyProject }
+                .collect { it.path }
+    }
+
+    List<String> classPath(String scope) {
+        project.configurations[scope]
+               .resolvedConfiguration
+               .getFirstLevelModuleDependencies(new NotSpec(isProject))
+               .collectMany { dependency ->
+            dependency.allModuleArtifacts.collect { it.file }
+        }
+    }
+
+    Iterable<String> getSourceSets() {
         Set<String> sources = ['java', 'scala', 'resources']
         project.sourceSets.findAll { set ->
             sources.contains(set.name)
-        }.collectNested { sourceSet ->
-            sourceSet.srcDirs.collect { dir -> dir.absolutePath }
         }
     }
 
@@ -37,7 +53,7 @@ class SubprojectModule {
         project.logger.debug("EnsimeModule: Writing name: ${project.name}")
 
         // source-roots ...
-        List<String> sourceRoots = getSourceSets()
+        Iterable<String> sourceRoots = getSourceSets()
         properties.put("source-roots", sourceRoots)
         project.logger.debug("EnsimeModule: Writing source-roots: ${sourceRoots}")
 
@@ -56,20 +72,10 @@ class SubprojectModule {
         properties.put("depends-on-modules", dependencies)
         project.logger.debug("EnsimeModule: Writing depends-on-modules: ${dependencies}")
 
-        // compile-deps ...
-        List<String> classpath = project.sourceSets.main.compileClasspath.collect { it.absolutePath }
-        properties.put("compile-deps", classpath)
-        project.logger.debug("EnsimeModule: Writing compile-deps: ${classpath}")
-
-        // runtime-deps ...
-        classpath = project.sourceSets.main.runtimeClasspath.collect { it.absolutePath }
-        properties.put("runtime-deps", classpath)
-        project.logger.debug("EnsimeModule: Writing runtime-deps: ${classpath}")
-
-        // test-deps ...
-        classpath = project.sourceSets.test.compileClasspath.collect { it.absolutePath }
-        properties.put("test-deps", classpath)
-        project.logger.debug("EnsimeModule: Writing test-deps: ${classpath}")
+        //  Classpath modifications
+        properties.put("compile-deps", classPath('compile'))
+        properties.put("runtime-deps", classPath('runtime'))
+        properties.put("test-deps", classPath('testCompile'))
 
         // reference-source-roots ...
         // right now this can only be configure in/through EnsimeTask
