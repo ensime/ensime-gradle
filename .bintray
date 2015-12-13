@@ -1,15 +1,15 @@
 {
-  "package": {
-    "name": "ensime-gradle",
-    "repo": "coacoas",
-    "subject": "coacoas"
-  }
+    "package": {
+        "name": "ensime-gradle",
+        "repo": "coacoas",
+        "subject": "coacoas"
+    },
 
-  "version": {
-    "name": "0.2.0-SNAPSHOT"
-  }
+    "version": {
+        "name": "0.2.0-SNAPSHOT"
+    },
 
-  "files": [
-    {"includePattern": "build/libs/(.*\.jar)", "uploadPattern": "$1"}
-  ]
+    "files": [
+        { "includePattern": "build/libs/(.*\\.jar)", "uploadPattern": "$1" }
+    ]
 }
