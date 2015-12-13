@@ -110,6 +110,106 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         gradleVersion << supportedVersions
     }
 
+    def "Scala default source roots are properly described"() {
+        given:
+        buildFile << """
+            apply plugin: 'ensime'
+            apply plugin: 'scala'
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        "${testProjectDir.root}/src/main/resources"
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/java"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/scala"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/java"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/scala"/$
+
+        where:
+        gradleVersion << supportedVersions
+    }
+
+    def "Java default source roots are properly described"() {
+        given:
+        buildFile << """
+            apply plugin: 'ensime'
+            apply plugin: 'java'
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/java"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/main/scala"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/java"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/test/scala"/$
+
+        where:
+        gradleVersion << supportedVersions
+    }
+
+    def "Custom source roots are properly described"() {
+        given:
+        buildFile << """
+            apply plugin: 'ensime'
+            apply plugin: 'java'
+
+            sourceSets {
+              main {
+                java {
+                  srcDir '/srcJava'
+                }
+              }
+              test {
+                java {
+                  srcDir '/deeply/nested/directory/for/test/location'
+                }
+              }
+            }
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:source-roots \("[^\)]*?/src/main/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/srcJava"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/main/java"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/main/scala"/$
+        configuration =~ $/:source-roots \("[^\)]*?/src/test/resources"/$
+        configuration =~ $/:source-roots \("[^\)]*?/deeply/nested/directory/for/test/location"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/test/java"/$
+        configuration !=~ $/:source-roots \("[^\)]*?/src/test/scala"/$
+
+        where:
+        gradleVersion << supportedVersions
+    }
+
     /***
      def "It even works with a Play project"() {
      given:

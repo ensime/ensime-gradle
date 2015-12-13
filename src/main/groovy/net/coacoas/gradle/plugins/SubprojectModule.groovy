@@ -37,10 +37,9 @@ class SubprojectModule {
         }
     }
 
-    Iterable<String> getSourceSets() {
-        Set<String> sources = ['java', 'scala', 'resources']
-        project.sourceSets.findAll { set ->
-            sources.contains(set.name)
+    List<String> getSourceSets() {
+        project.sourceSets.collectMany {
+            it.allSource.srcDirs
         }
     }
 
