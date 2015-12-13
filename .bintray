@@ -1,6 +1,6 @@
 {
   "package": {
-    "name"": "ensime-gradle",
+    "name": "ensime-gradle",
     "repo": "coacoas",
     "subject": "coacoas"
   }
