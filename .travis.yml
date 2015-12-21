@@ -4,6 +4,11 @@ jdk:
 - oraclejdk7
 - openjdk7
 - openjdk6
+deploy:
+  provider: script
+  on: openjdk6
+  skip_cleanup: true
+  script: gradlew deploy
 env:
   global:
   - secure: PGUg0VtwMLRwoWVYtfMdCaIdgJBqw50XhQDe1PlgSb/WZUiUT80A1GDxniid6Z7zqJMQAoSr8jL01NoME9RIABlXKcR3pUg9qysnod/8GdeUuFoZf32+zxgdFLIR+0uWkoeqlA7rgsLDVV7IjRiJquK8VbQ8kBRjEjkxclR5Slk=

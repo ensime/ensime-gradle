@@ -150,3 +150,8 @@ def propOrEnv(key, defaultValue = '') {
   hasProperty(key) ? property(key) : (System.env[key] ?: defaultValue)
 }
 
+task deploy {
+  dependsOn(version.endsWith('-SNAPSHOT') ? artifactoryPublish : bintrayPublish)
+}
+
+
