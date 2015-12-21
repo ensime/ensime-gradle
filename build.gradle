@@ -46,10 +46,6 @@ dependencies {
   testRuntime files(createClasspathManifest)
 }
 
-signing {
-  sign configurations.archives
-}
-
 publishing {
   publications { 
     mavenJava(MavenPublication) { 
