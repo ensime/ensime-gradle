@@ -1,15 +1,14 @@
 language: groovy
 jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
-  - openjdk6
-deploy:
-  provider: bintray
-  file: ".bintray"
-  skip-cleanup: true
-  user: coacoas
-  key:
-    secure: QckxXkKuILAg9q80FtQGuLE+ST2+yTa8yqCd8cnKMmkQdT43GR8ZcoAPo2OM83Q8+sFfA5sN4UEgWSM5lZH/QXb43tm/CSdjXrKmCzaq1UUa9wFzpRCRwKvCecYeOrNb3rtvVUFSlueqzr/BKasXo/vjTom3UdQJf3DceMs8wYA=
-  on:
-    jdk: openjdk6
+- oraclejdk8
+- oraclejdk7
+- openjdk7
+- openjdk6
+env:
+  global:
+  - secure: PGUg0VtwMLRwoWVYtfMdCaIdgJBqw50XhQDe1PlgSb/WZUiUT80A1GDxniid6Z7zqJMQAoSr8jL01NoME9RIABlXKcR3pUg9qysnod/8GdeUuFoZf32+zxgdFLIR+0uWkoeqlA7rgsLDVV7IjRiJquK8VbQ8kBRjEjkxclR5Slk=
+  - secure: OWGracbds29KyBUOgo6e0pul27Y2QfE2Gj3tSswpwKFnlHLYO0u/YDEcfZkPmGvZeozDfe01kw/1zzj5opYona27mOVrWlr3+7iexgEIoZKylpamSjaZjCr9WCflJuhlQpNtmToAWQwYq5W3OAUhSbWUeLhwovNEL/CpweU5KaA=
+  - secure: CVVVWDvuPhiKZecBRcA1kh7sDikobC4ZL0kjXr9Tf9cGTRV6FuNahOcSoOjLN4Bf7hMw5LslFpQwQ50gyktAFg9GKT0L86kJuIn4A+qvhi1ue/PNuvxAp0oByylfAHT8zUY3cNuio7mI+9J6kFlcxw+t/sw69fyXqAmcX/YtICE=
+  - secure: jOqLoq/GFsn60VPjkQHvC0NUhSnO8ZJnV2+trONqNpaAW5Qw4NRdaj/oxUmDnghpTbgNi+q+ueJNGEdGyRm6r4dMJkSsr7RpkI5LytwTdgW4FJWimNZpNz5xzrjWZ9CRtduqL9Ehrn3/CRQzWVKD/wnHNXvr/VV+TY+kVGNuMTw=
+  - secure: dsXTRh+iMOzUzly1vocS+aup0+wk5GZDNCYsa2XztrVa6Ox2yCjZ/DEsalecHFsh+H5yiu/6l35kXbBBuKQpZm2SiaU4HCV8GgkAOE35dL6WcOsBr2n6cqUjRWpiMW/DFIul6JKXdKTCKYdxte8JXQ2OjXdwR99tX+aD5CXAsHw=
+  - secure: P1+/4mnCJEVqHyjaGtK8BRcE6T3pA1mlyu+VFhO4K8uy8Ybm4+L/Vo799ESINI25PWaJiFeBJX5JFrmTPo2X6uHEGLYnt/pDDnb2ui+dCfThmD91A2x5ToDXkMLsOo2s+jN1a6a5vlv48DKu9yYxWMMhgxnnAwnSsQfuc6eG7Pk=

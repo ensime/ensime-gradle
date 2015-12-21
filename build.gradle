@@ -1,28 +1,28 @@
-buildscript { 
-  repositories { 
-    mavenCentral()
-  }
-  dependencies {
-    classpath 'com.github.townsfolk:gradle-release:1.2'
-  }
+plugins {
+    id 'groovy'
+    id 'java-gradle-plugin'
+    id 'signing'
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version '4.0.0'
+    id 'com.jfrog.bintray' version '1.5'
 }
-
-apply plugin: 'java-gradle-plugin'
-apply plugin: 'groovy'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
-apply plugin: 'signing'
-apply plugin: 'release'
 
 group = 'net.coacoas.gradle'
 archivesBaseName = 'ensime-gradle'
+
+ext {
+  projectUrl = 'https://github.com/ensime/ensime-gradle'
+  bintrayUser = propOrEnv('BINTRAY_USER')
+  bintrayPassword = propOrEnv('BINTRAY_API_KEY')
+  bintrayRepo = propOrEnv('BINTRAY_REPO')
+}
 
 repositories {  
   mavenCentral() 
 }
 
 // Write the plugin's classpath to a file to share with the tests
-task createClasspathManifest {
+task createClasspathManifest  {
   def outputDir = file("$buildDir/$name")
 
   inputs.files sourceSets.main.runtimeClasspath
@@ -44,6 +44,60 @@ dependencies {
   }
 
   testRuntime files(createClasspathManifest)
+}
+
+signing {
+  sign configurations.archives
+}
+
+publishing {
+  publications { 
+    mavenJava(MavenPublication) { 
+      from components.java 
+      artifact sourcesJar
+      artifact javadocJar
+      pom.withXml {
+        asNode().children().last() + {
+          resolveStrategy = Closure.DELEGATE_FIRST
+          name archivesBaseName
+          description 'Gradle-ENSIME is a Gradle plugin for creating ENSIME configuration files for Gradle Projects'
+          url projectUrl
+    
+          scm {
+            url projectUrl
+            connection projectUrl
+            developerConnection projectUrl
+          }
+  
+          licenses {
+            license {
+              name 'The Apache Software License, Version 2.0'
+              url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              distribution 'repo'
+            }
+          }
+
+          developers {
+            developer {
+              id 'coacoas'
+              name 'Bill Carlson'
+              email 'bill@coacoas.net'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+bintray { 
+  user = bintrayUser
+  key = bintrayPassword
+  pkg { 
+    repo = bintrayRepo
+    name = archivesBaseName
+    version = version
+  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -77,61 +131,22 @@ test {
   dependsOn jar
 }
 
-signing {
-  required { gradle.taskGraph.hasTask("uploadArchives") }
-  sign configurations.archives
-}
-
-def sonatypeURL() {
-  version.endsWith('SNAPSHOT') ? 
-    'https://oss.sonatype.org/content/repositories/snapshots/' :
-    'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-}
-
-uploadArchives.doFirst { 
-  repositories.mavenDeployer.repository(url: sonatypeURL()) { 
-    authentication(userName: sonatypeUsername, 
-    password: sonatypePassword)
-  }
-}
-
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> 
-        signing.signPom(deployment) 
-      }
-
-      pom.project {
-        name 'gradle-ensime'
-        packaging 'jar'
-        description 'Gradle-ENSIME is a Gradle plugin for creating ENSIME configuration files for Gradle Projects'
-        url 'http://www.github.com/coacoas/gradle-ensime'
-
-        scm {
-          url 'scm:git:http://www.github.com/coacoas/gradle-ensime'
-          connection 'scm:git:git://github.com/coacoas/gradle-ensime.git'
-          developerConnection 'scm:git:git://github.com:coacoas/gradle-ensime.git'
-        }
-
-        licenses {
-          license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-            distribution 'repo'
-          }
-        }
-
-        developers {
-          developer {
-            id 'coacoas'
-            name 'Bill Carlson'
-          }
-        }
-      }
+artifactory { 
+  contextUrl = 'http://oss.jfrog.org/artifactory'
+  publish {
+    repository { 
+      repoKey = version.endsWith('-SNAPSHOT') ? 'oss-snapshot-local' : 'oss-release-local'
+      username = bintrayUser
+      password = bintrayPassword
+    }
+    defaults { 
+      publications('mavenJava')
+      publishArtifacts = true
     }
   }
 }
 
-createReleaseTag.dependsOn uploadArchives
+def propOrEnv(key, defaultValue = '') {
+  hasProperty(key) ? property(key) : (System.env[key] ?: defaultValue)
+}
 
