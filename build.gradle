@@ -160,7 +160,7 @@ def propOrEnv(key, defaultValue = '') {
 }
 
 artifactoryPublish.dependsOn check
-bintrayUpload.dependsOn check
+bintrayUpload.dependsOn(assemble, check)
 publishPlugins.dependsOn bintrayUpload
 
 
