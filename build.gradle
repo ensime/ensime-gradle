@@ -170,10 +170,8 @@ publishPlugins.dependsOn(bintrayUpload)
 bintrayUpload.dependsOn(assemble, check)
 
 
-/**
 if (version.endsWith('-SNAPSHOT')) {
   publish.dependsOn artifactoryPublish
 } else {
-  publish.dependsOn bintrayUpload
+  publish.dependsOn publishPlugins
 }
-**/
