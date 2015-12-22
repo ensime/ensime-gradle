@@ -73,7 +73,6 @@ class SubprojectModule {
 
         //  Classpath modifications
         properties.put("compile-deps", classPath('compile'))
-        properties.put("runtime-deps", classPath('runtime'))
         properties.put("test-deps", classPath('testCompile'))
 
         // reference-source-roots ...

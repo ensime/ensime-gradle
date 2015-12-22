@@ -66,7 +66,7 @@ class EnsimeAndroidModule {
 
     // runtime-deps ...
    classpath = project.getTasksByName("compileReleaseScala", false).toList().first().classpath.collect { it.absolutePath }
-    properties.put("runtime-deps", classpath)
+    // properties.put("runtime-deps", classpath)
     project.logger.debug("EnsimeModule: Writing runtime-deps: ${classpath}")
 
     // test-deps ...

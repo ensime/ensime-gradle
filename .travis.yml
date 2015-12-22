@@ -3,7 +3,7 @@ sudo: false
 cache:
   directories:
   - "$HOME/.gradle/caches"
-script: ./gradlew publish
+script: "./gradlew publish"
 git:
   depth: 5
 jdk:
@@ -18,4 +18,4 @@ env:
   - secure: A6OAx8O4FKxuxmEF3xcM2H3oVT41FCpPoG4HLfCmzVvXe1qxuHyf9ql8yGPCgkJ3rCWxq3TozyTrq0p/lf9xrvZDLwbUszcsAgCNuixD8cXT8j75AuArSufMwRky2WXIkqZuz0z0l9WBG+RXyoYHeGgZvLANXJsPYoXoam6q20M=
   - secure: gfrglDadX9+0w/zVzJIbzGcvNH/00zPZ3L7T+ccTXZa6bn3quEbrpsXZDhE9dzwCuYu90mj/1WpOzJ830R+bKRQ+wxfxVmWKbSCo0usCBmElltrSy2p7om1VGF7w0VulDES2Y2KzJDJ00rIjO4hVr5e8ICOfl0Bd6ubTf2E+T08=
   - secure: TS0Fl2ZmuOx+c552ogvLw/6FWkVbwnmu5rcmZ2x6qK7LIAZmMRr5Hu+AkXelFqypFjVnWJa6mWb31mYFSAwxZ19zbbYFMAz0L2JaM9q97stCLYuHMg5rIq9ruMP1EfXkpGtx8zYITITIkYHz9KR74U2R+ih6R/JIHSk4y5o6s7Y=
-
+  - secure: aJAruCTbiWKPelIdhU/Dq/tB9hGOvtRyq+mXXkGVYjD7TBg3Y9CDaZOqtD54a+ruIQbPp/67X1cmiO+z5+urwiqA1w6wji14VifpKFSOCj77gS+QXepZlA4c9JbjDmg/4kJUGt+ueyKm7lGACAkXiw8IOaP9aFkZBooc3BLgE38=
