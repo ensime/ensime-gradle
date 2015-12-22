@@ -45,6 +45,8 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         String javaVersion = ":java-home \"${javaHome()}\""
         configuration.contains(javaVersion)
 
+        configuration.contains(':runtime-deps') == false
+
         configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.5\.jar"\)/ }
 
         where:
@@ -72,6 +74,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         String configuration = ensime.readLines()
         configuration.contains(":scala-version \"2.11.7\"")
         configuration.contains(":java-home \"${javaHome()}\"")
+        configuration.contains(':runtime-deps') == false
 
         where:
         gradleVersion << supportedVersions
