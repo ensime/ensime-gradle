@@ -1,24 +1,37 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.gradle.publish:plugin-publish-plugin:0.9.2"
+  }
+}
+
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
-    id 'signing'
     id 'maven-publish'
+    id 'net.researchgate.release' version '2.3.4'
     id 'com.jfrog.artifactory' version '4.0.0'
     id 'com.jfrog.bintray' version '1.5'
 }
+apply plugin: "com.gradle.plugin-publish"
 
 group = 'net.coacoas.gradle'
-archivesBaseName = 'ensime-gradle'
+version = '0.2.0-SNAPSHOT'
 
 ext {
-  projectUrl = 'https://github.com/ensime/ensime-gradle'
+  projectUrl  = 'https://github.com/ensime/ensime-gradle'
+  scmUrl      = 'https://github.com/ensime/ensime-gradle'
   bintrayUser = propOrEnv('BINTRAY_USER')
   bintrayPassword = propOrEnv('BINTRAY_API_KEY')
   bintrayRepo = propOrEnv('BINTRAY_REPO')
 }
 
 repositories {  
-  mavenCentral() 
+  jcenter()
 }
 
 // Write the plugin's classpath to a file to share with the tests
@@ -48,7 +61,7 @@ dependencies {
 
 publishing {
   publications { 
-    mavenJava(MavenPublication) { 
+    ensime(MavenPublication) { 
       from components.java 
       artifact sourcesJar
       artifact javadocJar
@@ -60,9 +73,9 @@ publishing {
           url projectUrl
     
           scm {
-            url projectUrl
-            connection projectUrl
-            developerConnection projectUrl
+            url scmUrl
+            connection scmUrl
+            developerConnection scmUrl
           }
   
           licenses {
@@ -136,8 +149,21 @@ artifactory {
       password = bintrayPassword
     }
     defaults { 
-      publications('mavenJava')
+      publications('ensime')
       publishArtifacts = true
+    }
+  }
+}
+
+pluginBundle {
+  website = projectUrl
+  vcsUrl = scmUrl
+
+  plugins { 
+    ensime {
+      id = 'ensime'
+      displayName = 'ENSIME plugin for Gradle'
+      tags = ['build', 'scala', 'java', 'ensime', 'ide', 'development']
     }
   }
 }
@@ -146,8 +172,13 @@ def propOrEnv(key, defaultValue = '') {
   hasProperty(key) ? property(key) : (System.env[key] ?: defaultValue)
 }
 
-task deploy {
-  dependsOn(version.endsWith('-SNAPSHOT') ? artifactoryPublish : bintrayPublish)
+artifactoryPublish.dependsOn check
+bintrayUpload.dependsOn check
+publishPlugins.dependsOn bintrayUpload
+
+
+if (version.endsWith('-SNAPSHOT')) {
+  publish.dependsOn artifactoryPublish
+} else {
+  publish.dependsOn publishPlugins
 }
-
-
