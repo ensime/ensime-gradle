@@ -154,7 +154,7 @@ pluginBundle {
 
   plugins { 
     ensime {
-      id = 'ensime'
+      id = 'net.coacoas.gradle.ensime'
       displayName = 'ENSIME plugin for Gradle'
       tags = ['build', 'scala', 'java', 'ensime', 'ide', 'development']
     }
