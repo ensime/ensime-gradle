@@ -5,43 +5,50 @@
 
 ## Purposes
 
-The gradle-ensime plugin creates [.ensime project files](https://github.com/ensime/ensime-server/wiki/Example-Configuration-File) for the ENhanced Scala Integration Mode for Emacs ([ENSIME](https://github.com/ensime)), written by Aemon Cannon.
+The ensime-gradle plugin creates [.ensime project files](https://github.com/ensime/ensime-server/wiki/Example-Configuration-File) for the ENhanced Scala Integration Mode for Emacs ([ENSIME](https://github.com/ensime))
 
 ## Usage
 
-For it to work the build.gradle file either needs to have the [`scala`](http://www.gradle.org/docs/current/userguide/scala_plugin.html) plugin or the [`gradle-android-scala-plugin`](https://github.com/saturday06/gradle-android-scala-plugin) to be configured (the later is WIP).
+This plugin will create .ensime configuration files for projects using the [`java`](https://docs.gradle.org/current/userguide/java_plugin.html), [`scala`](https://docs.gradle.org/current/userguide/scala_plugin.html) or [`gradle-android-scala-plugin`](https://github.com/saturday06/gradle-android-scala-plugin) to be configured (the later is WIP).
 
 A working android example can be found [here](https://github.com/rolandtritsch/scala-android-ui-samples).
 
-### Building from source
+Note that this does not yet support the new 'software model' configuration.  Yet. 
 
-To build the current dev build, clone this repository and run the build
-  ./gradlew clean build install 
-  
-This copies the jar to your local maven repository.  To use this in your build, add the following to your build.gradle
+### Using the plugin in your build
 
-    buildscript {
-      repositories { mavenLocal() }
+For gradle 2.1+ 
+
+    plugins {
+      id 'org.ensime.gradle' version '0.2.2'
+    }
+
+For older versions:
+
+    buildscript { 
+      repositories { 
+        jcenter()
+      }
 
       dependencies {
-        classpath group: 'net.coacoas.gradle', name: 'ensime-gradle', version: '0.2.0-SNAPSHOT'
+        classpath 'net.coacoas.gradle:ensime-gradle:0.2.2'
       }
     }
-    apply plugin: 'ensime'
-    
-### Installing Maven Central
 
-To use the latest release version of the plugin, make sure that the jar file is loaded in the buildscript classpath and the plugin is applied:
+To use SNAPSHOT builds, 
 
-    buildscript {
-      repositories { mavenCentral() }
+    buildscript { 
+      repositories { 
+        maven { 
+          url 'https://oss.jfrog.org/oss-snapshot-local'
+        }
+      }
 
       dependencies {
-        classpath group: 'net.coacoas.gradle', name: 'ensime-gradle', version: '0.2.0-SNAPSHOT'
+        classpath 'net.coacoas.gradle:ensime-gradle:0.3.0-SNAPSHOT'
       }
     }
-    apply plugin: 'ensime'
-    
+
 ### Running the task
 
 The plugin adds the 'ensime' task to the project to create a .ensime file in the project directory.
