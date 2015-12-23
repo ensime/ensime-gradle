@@ -150,6 +150,7 @@ artifactory {
 pluginBundle {
   website = projectUrl
   vcsUrl = scmUrl
+  description = 'The ENSIME plugin for Gradle generates .ensime configuration files for Gradle Java/Scala projects'
 
   plugins { 
     ensime {
