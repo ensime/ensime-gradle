@@ -149,6 +149,7 @@ pluginBundle {
   plugins { 
     ensime {
       id = 'org.ensime.gradle'
+      version = version
       displayName = 'ENSIME plugin for Gradle'
       tags = ['build', 'scala', 'java', 'ensime', 'ide', 'development']
     }
