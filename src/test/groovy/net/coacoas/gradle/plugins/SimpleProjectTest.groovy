@@ -16,7 +16,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Defaults with Scala plugin"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'scala'
 
             repositories {
@@ -56,7 +56,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Defaults with Java-only plugin"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'java'
 
         """
@@ -83,7 +83,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Transitive dependencies are included in the classpath"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'java'
 
             repositories {
@@ -116,7 +116,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Scala default source roots are properly described"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'scala'
         """
 
@@ -145,7 +145,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Java default source roots are properly described"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'java'
         """
 
@@ -173,7 +173,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
     def "Custom source roots are properly described"() {
         given:
         buildFile << """
-            apply plugin: 'ensime'
+            apply plugin: 'org.ensime.gradle'
             apply plugin: 'java'
 
             sourceSets {
@@ -217,7 +217,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
      def "It even works with a Play project"() {
      given:
      buildFile << """
-     apply plugin: 'ensime'
+     apply plugin: 'org.ensime.gradle'
      plugins {
      id 'play'
      }
