@@ -88,6 +88,10 @@ class EnsimeTask extends DefaultTask {
               new SubprojectModule(subproject).settings()
     })
 
+    if (project.extensions.ensime.formatting.prefs.size() > 0) {
+      properties.put("formatting-prefs", project.extensions.ensime.formatting.prefs)
+    }
+
     // write and format the file ...
     outputFile.write(SExp.format(properties))
   }

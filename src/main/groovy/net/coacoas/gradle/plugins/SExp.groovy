@@ -9,8 +9,14 @@ class SExp {
       return '(' + object.entrySet().collect { ":${it.key} " + format(it.value)}.join('\n') + ')'
     } else if (object instanceof List) {
       return '(' + object.collect { format(it) }.join(' ') + ')'
-    } else {
+    } else if (object instanceof String) {
       return '"' + object.toString().replaceAll("\\\\", "\\\\\\\\") + '"'
+    } else if (object instanceof Boolean) {
+      return object ? "t" : "nil"
+    } else if (object instanceof Integer) {
+      return "${object}"
+    } else {
+      return '"' + "${object}" + '"'
     }
   }
 }

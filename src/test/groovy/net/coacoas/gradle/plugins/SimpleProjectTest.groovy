@@ -250,4 +250,36 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
                 new File(javaProperty).parentFile.absolutePath :
                 new File(javaProperty).absolutePath
     }
+
+    def "Test that formatting prefs show up in the .ensime"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            ensime { 
+              formattingPrefs {
+                indentSpaces    4
+                indentWithTabs  false
+                alignParameters true
+              }
+            }
+
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:formatting-prefs \(:indent-spaces 4, :indent-with-tabs nil, :align-parameters t\)/$
+	
+        where:
+        gradleVersion << supportedVersions
+    }
 }

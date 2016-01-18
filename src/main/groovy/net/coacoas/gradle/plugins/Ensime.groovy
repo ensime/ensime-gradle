@@ -79,6 +79,32 @@ class Ensime implements Plugin<Project> {
   }
 }
 
+class FormattingPrefsModel {
+  def prefs = [:]
+
+  def methodMissing(String name, args) {
+    if (args.size() > 1)
+      throw new IllegalArgumentException("The configuration for $name takes only one argument")
+    if (args.size() < 1)
+      throw new IllegalArgumentException("The configuration for $name requires an argument")
+
+    String dashed = name.replaceAll(/\B[A-Z]/) { '-' + it }.toLowerCase()
+    prefs[dashed] = args[0]
+  }
+
+  @Override
+  String toString() {
+    List<String> entries = prefs.entrySet().collect { entry ->
+      "${entry.key} => ${entry.value}"
+    }
+    "FormattingPrefs: ( ${entries.join(",")} )"
+  }
+
+  void apply(Closure c) {
+    c.call()
+  }
+}
+
 /**
  * Define all the extension for the plugin.
  */
@@ -100,11 +126,9 @@ class EnsimeModel {
   public List<String> javaFlags = []
   public List<String> referenceSourceRoots = []
   public List<String> compilerArgs = []
-  // public formatingPrefs = [:]
-  // TODO - implement :formating-prefs
+  public FormattingPrefsModel formatting = new FormattingPrefsModel()
 
   // TODO - check ensime-server source code for other conv vars like :project-package
-
 
   @Override
   public String toString() {
@@ -116,6 +140,13 @@ class EnsimeModel {
             ", javaFlags=" + javaFlags +
             ", referenceSourceRoots=" + referenceSourceRoots +
             ", compilerArgs=" + compilerArgs +
+	    ", ${formatting}" +
             '}';
+  }
+
+  public void formattingPrefs(Closure c) {
+    c.delegate = formatting
+    c.resolveStrategy = Closure.DELEGATE_FIRST
+    c.call()
   }
 }
