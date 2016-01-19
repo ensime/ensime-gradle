@@ -69,10 +69,7 @@ class EnsimeTask extends DefaultTask {
       project.logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
 
       // compiler-args ...
-      if(ensime.compilerArgs.size() > 0) {
-        properties.put("compiler-args", ensime.compilerArgs)
-        project.logger.debug("EnsimeTask: Writing compiler-args: ${ensime.compilerArgs}")
-      }
+      properties.put("compiler-args", ensime.compilerArgs.empty ? 'nil' : ensime.compilerArgs)
 
       Collection<Project> subprojects = project.allprojects.findAll { prj ->
         boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||

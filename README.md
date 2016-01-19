@@ -49,6 +49,42 @@ To use SNAPSHOT builds,
       }
     }
 
+### Configuring ENSIME
+
+For the most part, the default configuration options should be
+enough, and simply executing the `ensime` task should be enough
+to create a proper .ensime file.
+
+In rare cases, some additional elements may need to be configured
+inside the build.gradle file.  For these cases, an `ensime` block
+should be used to indicate these options.
+
+Example:
+
+    ensime {
+      scalaVersion 2.11.7
+      javaHome     System.properites['JAVA_HOME']
+      cacheDir = ""
+
+      javaFlags      '-Xlint', '-wahoowa'
+      compilerArgs   '-Xlint'
+    } 
+
+#### Formatting Preferences
+
+To configure Scalariform options for ENSIME's code formatting 
+capabilities, add a formattingPrefs section.  Each option 
+will be added to the .ensime file as a formatting option. 
+
+Example:
+
+    ensime { 
+      formattingPrefs { 
+        indentSpaces   4
+        indentWithTabs false
+      }
+    }
+
 ### Running the task
 
 The plugin adds the 'ensime' task to the project to create a .ensime file in the project directory.

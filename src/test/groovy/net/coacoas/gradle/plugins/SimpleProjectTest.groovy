@@ -282,4 +282,34 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         where:
         gradleVersion << supportedVersions
     }
+
+    def "Test compilerArgs configuration method"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            ensime {
+              scalaVersion '2.11.7'
+	      compilerArgs '-a', '--compiler-arg', '-Xlint'
+ 	      compilerArgs '-b'
+            }
+
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:compiler-args \("-a" "--compiler-arg" "-Xlint" "-b"\)/$
+	
+        where:
+        gradleVersion << supportedVersions
+    }
 }
