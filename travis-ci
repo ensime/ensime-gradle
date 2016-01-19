@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  echo -e "Building $TRAVIS_BRANCH"
+  ./gradlew publish $*
+else
+  echo -e "Building Pull Request $TRAVIS_PULL_REQUEST on branch $TRAVIS_BRANCH"
+  ./gradlew build $*
+fi
