@@ -4,7 +4,7 @@ cache:
   directories:
   - "$HOME/.gradle/caches"
 before_install: echo -e "gradle.publish.key=$APIKEY\ngradle.publish.secret=$APISECRET" >> gradle.properties
-script: "./gradlew publish"
+script: "./travis-ci"
 git:
   depth: 5
 jdk:
