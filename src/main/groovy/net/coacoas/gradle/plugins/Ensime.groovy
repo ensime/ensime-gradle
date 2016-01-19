@@ -148,18 +148,28 @@ class EnsimeModel {
   }
 
   def javaHome(String home) {
-    if (new File(home).exists()) {
-      javaHome = home
+    javaHome(new File(home))
+  }
+
+  def javaHome(File home) {
+    if (!home.exists()) {
+      throw new IllegalArgumentException("The specified java home directory [${home}] does not exist")
+    } else if (!['bin/java', 'bin/java.exe'].exists { new File(home, it).exists()}) {
+      throw new IllegalArgumentException("The specified java home directory [${home}] does not point to a valid Java installation")
     } else {
-      throw new IllegalArgumentException("The specified home directory [${home}] does not exist")
+      javaHome = home
     }
+  }
+
+  def cacheDir(String cacheDir) {
+    cacheDir(new File(cacheDir))
   }
 
   def cacheDir(File cache) {
     if (!cache.exists()) {
       cache.mkdirs()
     }
-    javaHome = home
+    cacheDir = cache
   }
 
   public void formattingPrefs(Closure c) {

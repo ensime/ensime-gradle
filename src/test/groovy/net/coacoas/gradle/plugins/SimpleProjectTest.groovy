@@ -278,6 +278,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         ensime.exists()
         String configuration = ensime.readLines()
         configuration =~ $/:formatting-prefs \(:indentSpaces 4, :indentWithTabs nil, :alignParameters t\)/$
+	configuration !=~ /::/
 	
         where:
         gradleVersion << supportedVersions
@@ -293,6 +294,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
               scalaVersion '2.11.7'
 	      compilerArgs '-a', '--compiler-arg', '-Xlint'
  	      compilerArgs '-b'
+              cacheDir     file('.ensime.cache.d')
             }
 
         """
@@ -308,6 +310,8 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         ensime.exists()
         String configuration = ensime.readLines()
         configuration =~ $/:compiler-args \("-a" "--compiler-arg" "-Xlint" "-b"\)/$
+        configuration =~ $/:cache-dir "[\w\d:/\\]+\.ensime\.cache\.d"/$
+	configuration !=~ /::/
 	
         where:
         gradleVersion << supportedVersions

@@ -54,7 +54,7 @@ class EnsimeTask extends DefaultTask {
       }
 
       ensime.formatting.prefs.with { prefs ->
-        properties.put(":formatting-prefs", prefs)
+        properties.put("formatting-prefs", prefs)
       }
 
       // reference-source-roots ...
