@@ -11,85 +11,87 @@ class EnsimeTask extends DefaultTask {
 
   @TaskAction
   public void writeFile() {
-    project.logger.info("Ensime Model: ${project.extensions.ensime}")
-
-    File outputFile = ensimeFile(project.extensions.ensime.targetFile)
-
     // start to put the ensime file togther ...
     Map<String, Object> properties = new LinkedHashMap<String, Object>()
+    File outputFile = ensimeFile(project.extensions.ensime.targetFile)
 
-    // root-dir ...
-    assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
-    properties.put("root-dir", project.rootDir.absolutePath)
-    project.logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
+    project.extensions.ensime.with { ensime ->
+      project.logger.info("Ensime Model: ${ensime}")
 
-    // cache-dir ...
-      String ensimeCacheDir = project.extensions.ensime.cacheDir.empty ?
+      // root-dir ...
+      assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
+      properties.put("root-dir", project.rootDir.absolutePath)
+      project.logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
+
+      // cache-dir ...
+      String ensimeCacheDir = ensime.cacheDir.empty ?
               project.projectDir.absolutePath + DEF_ENSIME_CACHE :
-              project.extensions.ensime.cacheDir
-    File ensimeCacheDirFile = new File(ensimeCacheDir)
-    if(!ensimeCacheDirFile.exists()) {
-      boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
-      assert wasAbleToCreateEnsimeCacheDir : "Failed to mkdirs cache-dir: ${ensimeCacheDir}"
-    }
-    properties.put("cache-dir", ensimeCacheDir)
-    project.logger.debug("EnsimeTask: Writing cache-dir: ${ensimeCacheDir}")
+              ensime.cacheDir
+      File ensimeCacheDirFile = new File(ensimeCacheDir)
+      if(!ensimeCacheDirFile.exists()) {
+        boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
+        assert wasAbleToCreateEnsimeCacheDir : "Failed to mkdirs cache-dir: ${ensimeCacheDir}"
+      }
+      properties.put("cache-dir", ensimeCacheDir)
+      project.logger.debug("EnsimeTask: Writing cache-dir: ${ensimeCacheDir}")
 
-    // (project) name ...
-    assert !project.name.empty, "project.name must be not empty"
-    properties.put("name", project.name)
-    project.logger.debug("EnsimeTask: Writing name: ${project.name}")
+      // (project) name ...
+      assert !project.name.empty, "project.name must be not empty"
+      properties.put("name", project.name)
+      project.logger.debug("EnsimeTask: Writing name: ${project.name}")
 
-    // java-home ...
-    getLogger().info("Using extension ${project.extensions.ensime}")
-    String javaHome = project.extensions.ensime.javaHome.absolutePath
-    assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
-    properties.put("java-home", javaHome)
-    project.logger.debug("EnsimeTask: Writing java-home: ${project.extensions.ensime.javaHome}")
+      // java-home ...
+      getLogger().info("Using extension ${ensime}")
+      String javaHome = ensime.javaHome.absolutePath
+      assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
+      properties.put("java-home", javaHome)
+      project.logger.debug("EnsimeTask: Writing java-home: ${ensime.javaHome}")
 
-    // java-flags ...
-    if(project.extensions.ensime.javaFlags.size() > 0) {
-      properties.put("java-flags", project.extensions.ensime.javaFlags)
-      project.logger.debug("EnsimeTask: Writing java-flags: ${project.extensions.ensime.javaFlags}")
-    }
+      // java-flags ...
+      if(ensime.javaFlags.size() > 0) {
+        properties.put("java-flags", ensime.javaFlags)
+        project.logger.debug("EnsimeTask: Writing java-flags: ${ensime.javaFlags}")
+      }
 
-    // reference-source-roots ...
-    if(project.extensions.ensime.referenceSourceRoots.size() > 0) {
-      properties.put("reference-source-roots", project.extensions.ensime.referenceSourceRoots)
-      project.logger.debug("EnsimeTask: Writing reference-source-roots: ${project.extensions.ensime.referenceSourceRoots}")
-    }
+      ensime.formatting.prefs.with { prefs ->
+        properties.put(":formatting-prefs", prefs)
+      }
 
-    // scala-version ...
-    assert !project.extensions.ensime.scalaVersion.empty, "scala-version must be not empty"
-    properties.put("scala-version", project.extensions.ensime.scalaVersion)
-    project.logger.debug("EnsimeTask: Writing scala-version: ${project.extensions.ensime.scalaVersion}")
+      // reference-source-roots ...
+      if(ensime.referenceSourceRoots.size() > 0) {
+        properties.put("reference-source-roots", ensime.referenceSourceRoots)
+        project.logger.debug("EnsimeTask: Writing reference-source-roots: ${ensime.referenceSourceRoots}")
+      }
 
-    // compiler-args ...
-    if(project.extensions.ensime.compilerArgs.size() > 0) {
-      properties.put("compiler-args", project.extensions.ensime.compilerArgs)
-      project.logger.debug("EnsimeTask: Writing compiler-args: ${project.extensions.ensime.compilerArgs}")
-    }
+      // scala-version ...
+      assert !ensime.scalaVersion.empty, "scala-version must be not empty"
+      properties.put("scala-version", ensime.scalaVersion)
+      project.logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
 
-    Collection<Project> subprojects = project.allprojects.findAll { prj ->
-      boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
-              prj.plugins.hasPlugin('java')
-      boolean notSupported = prj.plugins.hasPlugin('groovy')
+      // compiler-args ...
+      if(ensime.compilerArgs.size() > 0) {
+        properties.put("compiler-args", ensime.compilerArgs)
+        project.logger.debug("EnsimeTask: Writing compiler-args: ${ensime.compilerArgs}")
+      }
 
-      project.logger.debug("Checking project $prj")
-      project.logger.debug("Has plugins: ${prj.plugins.collect{it.class.name}}")
-      supported && !notSupported
-    }
-    project.logger.info("Configuring subprojects $subprojects")
+      Collection<Project> subprojects = project.allprojects.findAll { prj ->
+        boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
+                prj.plugins.hasPlugin('java')
+        boolean notSupported = prj.plugins.hasPlugin('groovy')
 
-    // process subprojects ...
-    properties.put("subprojects", subprojects.collect { subproject ->
-      subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
-              new EnsimeAndroidModule(subproject).settings() :
-              new SubprojectModule(subproject).settings()
-    })
+        project.logger.debug("Checking project $prj")
+        project.logger.debug("Has plugins: ${prj.plugins.collect{it.class.name}}")
+        supported && !notSupported
+      }
+      project.logger.info("Configuring subprojects $subprojects")
 
-    if (project.extensions.ensime.formatting.prefs.size() > 0) {
-      properties.put("formatting-prefs", project.extensions.ensime.formatting.prefs)
+      // process subprojects ...
+      properties.put("subprojects", subprojects.collect { subproject ->
+        subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
+                new EnsimeAndroidModule(subproject).settings() :
+                new SubprojectModule(subproject).settings()
+      })
+
     }
 
     // write and format the file ...

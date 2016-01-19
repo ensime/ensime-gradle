@@ -277,7 +277,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         File ensime = new File(testProjectDir.root, '.ensime')
         ensime.exists()
         String configuration = ensime.readLines()
-        configuration =~ $/:formatting-prefs \(:indent-spaces 4, :indent-with-tabs nil, :align-parameters t\)/$
+        configuration =~ $/:formatting-prefs \(:indentSpaces 4, :indentWithTabs nil, :alignParameters t\)/$
 	
         where:
         gradleVersion << supportedVersions

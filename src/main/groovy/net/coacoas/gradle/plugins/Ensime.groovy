@@ -88,8 +88,7 @@ class FormattingPrefsModel {
     if (args.size() < 1)
       throw new IllegalArgumentException("The configuration for $name requires an argument")
 
-    String dashed = name.replaceAll(/\B[A-Z]/) { '-' + it }.toLowerCase()
-    prefs[dashed] = args[0]
+    prefs[name] = args[0]
   }
 
   @Override

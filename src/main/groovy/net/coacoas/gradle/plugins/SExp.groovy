@@ -6,9 +6,9 @@ package net.coacoas.gradle.plugins
 class SExp {
   static String format(Object object) {
     if (object instanceof Map) {
-      return '(' + object.entrySet().collect { ":${it.key} " + format(it.value)}.join('\n') + ')'
+      return object.empty ? 'nil' : '(' + object.entrySet().collect { ":${it.key} " + format(it.value)}.join('\n') + ')'
     } else if (object instanceof List) {
-      return '(' + object.collect { format(it) }.join(' ') + ')'
+      return object.empty ? 'nil' : '(' + object.collect { format(it) }.join(' ') + ')'
     } else if (object instanceof String) {
       return '"' + object.toString().replaceAll("\\\\", "\\\\\\\\") + '"'
     } else if (object instanceof Boolean) {
@@ -16,7 +16,7 @@ class SExp {
     } else if (object instanceof Integer) {
       return "${object}"
     } else {
-      return '"' + "${object}" + '"'
+      return "\"${object}\""
     }
   }
 }
