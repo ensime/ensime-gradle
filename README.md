@@ -45,7 +45,7 @@ To use SNAPSHOT builds,
       }
 
       dependencies {
-        classpath 'net.coacoas.gradle:ensime-gradle:0.3.0-SNAPSHOT'
+        classpath 'net.coacoas.gradle:ensime-gradle:0.2.3-SNAPSHOT'
       }
     }
 
