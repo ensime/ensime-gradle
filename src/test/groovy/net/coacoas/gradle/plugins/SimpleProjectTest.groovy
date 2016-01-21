@@ -250,4 +250,70 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
                 new File(javaProperty).parentFile.absolutePath :
                 new File(javaProperty).absolutePath
     }
+
+    def "Test that formatting prefs show up in the .ensime"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            ensime { 
+              formattingPrefs {
+                indentSpaces    4
+                indentWithTabs  false
+                alignParameters true
+              }
+            }
+
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:formatting-prefs \(:indentSpaces 4, :indentWithTabs nil, :alignParameters t\)/$
+	configuration !=~ /::/
+	
+        where:
+        gradleVersion << supportedVersions
+    }
+
+    def "Test compilerArgs configuration method"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            ensime {
+              scalaVersion '2.11.7'
+	      compilerArgs '-a', '--compiler-arg', '-Xlint'
+ 	      compilerArgs '-b'
+              cacheDir     file('.ensime.cache.d')
+            }
+
+        """
+
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:compiler-args \("-a" "--compiler-arg" "-Xlint" "-b"\)/$
+        configuration =~ $/:cache-dir "[\w\d:/\\]+\.ensime\.cache\.d"/$
+	configuration !=~ /::/
+	
+        where:
+        gradleVersion << supportedVersions
+    }
 }
