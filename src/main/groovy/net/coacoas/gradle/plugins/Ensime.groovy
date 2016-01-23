@@ -100,6 +100,8 @@ class FormattingPrefsModel {
   }
 
   void apply(Closure c) {
+    c.delegate = this
+    c.resolveStrategy = Closure.DELEGATE_FIRST
     c.call()
   }
 }
@@ -108,15 +110,15 @@ class FormattingPrefsModel {
  * Define all the extension for the plugin.
  */
 class EnsimeModel {
-  public String targetFile = ""
+  public File targetFile
 
   // can be >t< or >nil<
   // TODO - make :use-sbt work (this is not a string))
-  // public String useSbt = ""
+  public boolean useSbt = false
 
   public String scalaVersion
   public File javaHome
-  public String cacheDir = ""
+  public File cacheDir
 
   public List<String> javaFlags = []
   public List<String> referenceSourceRoots = []
@@ -137,6 +139,10 @@ class EnsimeModel {
             ", compilerArgs=" + compilerArgs +
 	    ", ${formatting}" +
             '}';
+  }
+
+  def into(File target) {
+    this.targetFile = target
   }
 
   def compilerArgs(String... args) {
@@ -161,10 +167,6 @@ class EnsimeModel {
     }
   }
 
-  def cacheDir(String cacheDir) {
-    cacheDir(new File(cacheDir))
-  }
-
   def cacheDir(File cache) {
     if (!cache.exists()) {
       cache.mkdirs()
@@ -173,8 +175,6 @@ class EnsimeModel {
   }
 
   public void formattingPrefs(Closure c) {
-    c.delegate = formatting
-    c.resolveStrategy = Closure.DELEGATE_FIRST
-    c.call()
+    formatting.apply(c)
   }
 }

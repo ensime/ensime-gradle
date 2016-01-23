@@ -6,8 +6,8 @@ import org.gradle.api.tasks.TaskAction
  * Implementation of the 'ensime' task.
  */
 class EnsimeTask extends DefaultTask {
-  private static final String DEF_ENSIME_FILE = "/.ensime"
-  private static final String DEF_ENSIME_CACHE = "/.ensime_cache.d"
+  private static final String DEF_ENSIME_FILE = ".ensime"
+  private static final String DEF_ENSIME_CACHE = ".ensime_cache.d"
 
   @TaskAction
   public void writeFile() {
@@ -24,12 +24,9 @@ class EnsimeTask extends DefaultTask {
       project.logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
 
       // cache-dir ...
-      String ensimeCacheDir = ensime.cacheDir.empty ?
-              project.projectDir.absolutePath + DEF_ENSIME_CACHE :
-              ensime.cacheDir
-      File ensimeCacheDirFile = new File(ensimeCacheDir)
-      if(!ensimeCacheDirFile.exists()) {
-        boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
+      File ensimeCacheDir = ensime.cacheDir ?: project.file(DEF_ENSIME_CACHE)
+      if(!ensimeCacheDir.exists()) {
+        boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDir.mkdirs()
         assert wasAbleToCreateEnsimeCacheDir : "Failed to mkdirs cache-dir: ${ensimeCacheDir}"
       }
       properties.put("cache-dir", ensimeCacheDir)
@@ -69,7 +66,7 @@ class EnsimeTask extends DefaultTask {
       project.logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
 
       // compiler-args ...
-      properties.put("compiler-args", ensime.compilerArgs.empty ? 'nil' : ensime.compilerArgs)
+      properties.put("compiler-args", ensime.compilerArgs)
 
       Collection<Project> subprojects = project.allprojects.findAll { prj ->
         boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
@@ -100,15 +97,12 @@ class EnsimeTask extends DefaultTask {
    * @param targetFile
    * @return
    */
-  File ensimeFile(String targetFile) {
-    String fileName = targetFile.empty ?
-            project.projectDir.absolutePath + DEF_ENSIME_FILE :
-            project.extensions.ensime.targetFile
-    File file = new File(fileName)
+  File ensimeFile(File targetFile) {
+    File file = targetFile ?: project.file(DEF_ENSIME_FILE)
     if(!file.parentFile.exists()) {
-      assert file.parentFile.mkdirs() : "Failed to mkdirs for ensime file: ${fileName}"
+      assert file.parentFile.mkdirs() : "Failed to mkdirs for ensime file: ${file}"
     }
-    project.logger.debug("EnsimeTask: Writing ensime configuration to ${fileName} ...")
+    project.logger.debug("EnsimeTask: Writing ensime configuration to ${file} ...")
     file
   }
 }
