@@ -8,3 +8,5 @@
 *.iml
 atlassian-ide-plugin.xml
 /test
+\#*\#
+~*
