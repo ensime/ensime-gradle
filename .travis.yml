@@ -1,10 +1,5 @@
 language: groovy
 sudo: false
-cache:
-  directories:
-  - "$HOME/.gradle/caches"
-before_install: echo -e "gradle.publish.key=$APIKEY\ngradle.publish.secret=$APISECRET" >> gradle.properties
-script: "./travis-ci"
 git:
   depth: 5
 jdk:
@@ -12,3 +7,11 @@ jdk:
 - oraclejdk7
 - openjdk7
 - openjdk6
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: "./gradlew publish"
+    on:
+      repo: ensime/ensime-gradle
+      condition: "$TRAVIS_PULL_REQUEST != false"
+      jdk: openjdk6
