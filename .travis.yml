@@ -18,5 +18,5 @@ deploy:
     on:
       all_branches: true
       repo: ensime/ensime-gradle
-      condition: "$TRAVIS_PULL_REQUEST != false"
+      condition: "$TRAVIS_PULL_REQUEST == false"
       jdk: openjdk6
