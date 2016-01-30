@@ -79,20 +79,41 @@ class Ensime implements Plugin<Project> {
   }
 }
 
+class FormattingPrefsModel {
+  def prefs = [:]
+
+  def methodMissing(String name, args) {
+    if (args.size() > 1)
+      throw new IllegalArgumentException("The configuration for $name takes only one argument")
+    if (args.size() < 1)
+      throw new IllegalArgumentException("The configuration for $name requires an argument")
+
+    prefs[name] = args[0]
+  }
+
+  @Override
+  String toString() {
+    List<String> entries = prefs.entrySet().collect { entry ->
+      "${entry.key} => ${entry.value}"
+    }
+    "FormattingPrefs: ( ${entries.join(",")} )"
+  }
+
+  void apply(Closure c) {
+    c.call()
+  }
+}
+
 /**
  * Define all the extension for the plugin.
  */
 class EnsimeModel {
-  // e.g. "<absolutePath>/.ensime"
   public String targetFile = ""
 
   // can be >t< or >nil<
   // TODO - make :use-sbt work (this is not a string))
   // public String useSbt = ""
 
-  // allow to set the vars in the .ensime file
-  // (https://github.com/ensime/ensime-server/wiki/Example-Configuration-File)
-  // that cannot be set/configured through the project conf
   public String scalaVersion
   public File javaHome
   public String cacheDir = ""
@@ -100,11 +121,9 @@ class EnsimeModel {
   public List<String> javaFlags = []
   public List<String> referenceSourceRoots = []
   public List<String> compilerArgs = []
-  // public formatingPrefs = [:]
-  // TODO - implement :formating-prefs
+  public FormattingPrefsModel formatting = new FormattingPrefsModel()
 
   // TODO - check ensime-server source code for other conv vars like :project-package
-
 
   @Override
   public String toString() {
@@ -116,6 +135,46 @@ class EnsimeModel {
             ", javaFlags=" + javaFlags +
             ", referenceSourceRoots=" + referenceSourceRoots +
             ", compilerArgs=" + compilerArgs +
+	    ", ${formatting}" +
             '}';
+  }
+
+  def compilerArgs(String... args) {
+    compilerArgs.addAll(args)
+  }
+
+  def scalaVersion(String version) {
+    this.scalaVersion = version
+  }
+
+  def javaHome(String home) {
+    javaHome(new File(home))
+  }
+
+  def javaHome(File home) {
+    if (!home.exists()) {
+      throw new IllegalArgumentException("The specified java home directory [${home}] does not exist")
+    } else if (!['bin/java', 'bin/java.exe'].exists { new File(home, it).exists()}) {
+      throw new IllegalArgumentException("The specified java home directory [${home}] does not point to a valid Java installation")
+    } else {
+      javaHome = home
+    }
+  }
+
+  def cacheDir(String cacheDir) {
+    cacheDir(new File(cacheDir))
+  }
+
+  def cacheDir(File cache) {
+    if (!cache.exists()) {
+      cache.mkdirs()
+    }
+    cacheDir = cache
+  }
+
+  public void formattingPrefs(Closure c) {
+    c.delegate = formatting
+    c.resolveStrategy = Closure.DELEGATE_FIRST
+    c.call()
   }
 }
