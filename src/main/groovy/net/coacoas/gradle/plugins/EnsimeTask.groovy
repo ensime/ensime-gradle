@@ -16,90 +16,91 @@ class EnsimeTask extends DefaultTask {
     File outputFile = ensimeFile(project.extensions.ensime.targetFile)
 
     project.extensions.ensime.with { ensime ->
-      project.logger.info("Ensime Model: ${ensime}")
+      project.logger.with { logger ->
+        logger.info("Ensime Model: ${ensime}")
 
-      // root-dir ...
-      assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
-      properties.put("root-dir", project.rootDir.absolutePath)
-      project.logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
+        // root-dir ...
+        assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
+        properties.put("root-dir", project.rootDir.absolutePath)
+        logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
 
-      // cache-dir ...
-      String ensimeCacheDir = ensime.cacheDir.empty ?
-              project.projectDir.absolutePath + DEF_ENSIME_CACHE :
-              ensime.cacheDir
-      File ensimeCacheDirFile = new File(ensimeCacheDir)
-      if(!ensimeCacheDirFile.exists()) {
-        boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
-        assert wasAbleToCreateEnsimeCacheDir : "Failed to mkdirs cache-dir: ${ensimeCacheDir}"
+        // cache-dir ...
+        String ensimeCacheDir = ensime.cacheDir.empty ?
+                project.projectDir.absolutePath + EnsimeTask.DEF_ENSIME_CACHE :
+                ensime.cacheDir
+        File ensimeCacheDirFile = new File(ensimeCacheDir)
+        if(!ensimeCacheDirFile.exists()) {
+          boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
+          assert wasAbleToCreateEnsimeCacheDir : "Failed to mkdirs cache-dir: ${ensimeCacheDir}"
+        }
+        properties.put("cache-dir", ensimeCacheDir)
+        logger.debug("EnsimeTask: Writing cache-dir: ${ensimeCacheDir}")
+
+        // (project) name ...
+        assert !project.name.empty, "project.name must be not empty"
+        properties.put("name", project.name)
+        logger.debug("EnsimeTask: Writing name: ${project.name}")
+
+        // java-home ...
+        getLogger().info("Using extension ${ensime}")
+        String javaHome = ensime.javaHome?.absolutePath
+        assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
+        properties.put("java-home", javaHome)
+        logger.debug("EnsimeTask: Writing java-home: ${ensime.javaHome}")
+
+        // java-flags ...
+        if(!ensime.javaFlags.empty) {
+          properties.put("java-flags", ensime.javaFlags)
+          logger.debug("EnsimeTask: Writing java-flags: ${ensime.javaFlags}")
+        }
+
+        properties.put("formatting-prefs", ensime.formatting?.prefs)
+
+        // reference-source-roots ...
+        if(!ensime.referenceSourceRoots.empty) {
+          properties.put("reference-source-roots", ensime.referenceSourceRoots)
+          logger.debug("EnsimeTask: Writing reference-source-roots: ${ensime.referenceSourceRoots}")
+        }
+
+        // scala-version ...
+        assert !ensime.scalaVersion.empty, "scala-version must be not empty"
+        properties.put("scala-version", ensime.scalaVersion)
+        logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
+
+        // compiler-args ...
+        properties.put("compiler-args", ensime.compilerArgs)
+
+        Collection<Project> subprojects = project.allprojects.findAll { prj ->
+          boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
+                  prj.plugins.hasPlugin('java')
+          boolean notSupported = prj.plugins.hasPlugin('groovy')
+
+          logger.debug("Checking project $prj")
+          logger.debug("Has plugins: ${prj.plugins.collect{it.class.name}}")
+          supported && !notSupported
+        }
+        logger.info("Configuring subprojects $subprojects")
+
+        // process subprojects ...
+        properties.put("subprojects", subprojects.collect { subproject ->
+          subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
+                  new EnsimeAndroidModule(subproject).settings() :
+                  new SubprojectModule(subproject).settings()
+        })
+
       }
-      properties.put("cache-dir", ensimeCacheDir)
-      project.logger.debug("EnsimeTask: Writing cache-dir: ${ensimeCacheDir}")
-
-      // (project) name ...
-      assert !project.name.empty, "project.name must be not empty"
-      properties.put("name", project.name)
-      project.logger.debug("EnsimeTask: Writing name: ${project.name}")
-
-      // java-home ...
-      getLogger().info("Using extension ${ensime}")
-      String javaHome = ensime.javaHome.absolutePath
-      assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
-      properties.put("java-home", javaHome)
-      project.logger.debug("EnsimeTask: Writing java-home: ${ensime.javaHome}")
-
-      // java-flags ...
-      if(ensime.javaFlags.size() > 0) {
-        properties.put("java-flags", ensime.javaFlags)
-        project.logger.debug("EnsimeTask: Writing java-flags: ${ensime.javaFlags}")
-      }
-
-      ensime.formatting.prefs.with { prefs ->
-        properties.put("formatting-prefs", prefs)
-      }
-
-      // reference-source-roots ...
-      if(ensime.referenceSourceRoots.size() > 0) {
-        properties.put("reference-source-roots", ensime.referenceSourceRoots)
-        project.logger.debug("EnsimeTask: Writing reference-source-roots: ${ensime.referenceSourceRoots}")
-      }
-
-      // scala-version ...
-      assert !ensime.scalaVersion.empty, "scala-version must be not empty"
-      properties.put("scala-version", ensime.scalaVersion)
-      project.logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
-
-      // compiler-args ...
-      properties.put("compiler-args", ensime.compilerArgs.empty ? 'nil' : ensime.compilerArgs)
-
-      Collection<Project> subprojects = project.allprojects.findAll { prj ->
-        boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
-                prj.plugins.hasPlugin('java')
-        boolean notSupported = prj.plugins.hasPlugin('groovy')
-
-        project.logger.debug("Checking project $prj")
-        project.logger.debug("Has plugins: ${prj.plugins.collect{it.class.name}}")
-        supported && !notSupported
-      }
-      project.logger.info("Configuring subprojects $subprojects")
-
-      // process subprojects ...
-      properties.put("subprojects", subprojects.collect { subproject ->
-        subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
-                new EnsimeAndroidModule(subproject).settings() :
-                new SubprojectModule(subproject).settings()
-      })
-
     }
+
 
     // write and format the file ...
     outputFile.write(SExp.format(properties))
   }
 
-  /**
-   * Returns the lcoation for the .ensime file and ensures that the parent directory is created.
-   * @param targetFile
-   * @return
-   */
+/**
+ * Returns the lcoation for the .ensime file and ensures that the parent directory is created.
+ * @param targetFile
+ * @return
+ */
   File ensimeFile(String targetFile) {
     String fileName = targetFile.empty ?
             project.projectDir.absolutePath + DEF_ENSIME_FILE :

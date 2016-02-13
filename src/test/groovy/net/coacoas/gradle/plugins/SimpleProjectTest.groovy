@@ -45,7 +45,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         String javaVersion = ":java-home \"${javaHome()}\""
         configuration.contains(javaVersion)
 
-        configuration.contains(':runtime-deps') == false
+        !configuration.contains(':runtime-deps')
 
         configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.5\.jar"\)/ }
 
@@ -74,7 +74,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         String configuration = ensime.readLines()
         configuration.contains(":scala-version \"2.11.7\"")
         configuration.contains(":java-home \"${javaHome()}\"")
-        configuration.contains(':runtime-deps') == false
+        !configuration.contains(':runtime-deps')
 
         where:
         gradleVersion << supportedVersions
@@ -96,7 +96,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--info', '--stacktrace')
                 .build()
@@ -121,7 +121,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--stacktrace')
                 .build()
@@ -150,7 +150,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--stacktrace')
                 .build()
@@ -191,7 +191,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--stacktrace')
                 .build()
@@ -268,7 +268,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--debug', '--stacktrace')
                 .build()
@@ -300,7 +300,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         """
 
         when:
-        def result = GradleRunner.create()
+        GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--debug', '--stacktrace')
                 .build()
