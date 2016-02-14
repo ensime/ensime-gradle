@@ -89,6 +89,11 @@ bintray {
   user = bintrayUser
   key = bintrayPassword
   publications = ['ensime']
+  pkg {
+    repo = bintrayRepo
+    name = archivesBaseName
+    version = version
+  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
