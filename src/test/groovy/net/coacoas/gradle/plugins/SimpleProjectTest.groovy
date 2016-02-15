@@ -24,7 +24,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
             }
 
             dependencies {
-              compile 'org.scala-lang:scala-library:2.10.5'
+              compile 'org.scala-lang:scala-library:2.10.4'
             }
         """
 
@@ -33,21 +33,22 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
                 .withArguments('ensime', '--debug')
+//                .withDebug(true)
                 .build()
 
         then:
-        result.output.contains("Using Scala version 2.10.5")
+        result.output.contains("Using Scala version 2.10.4")
         File ensime = new File(testProjectDir.root, '.ensime')
         ensime.exists()
         List<String> configuration = ensime.readLines()
 
-        configuration.contains(":scala-version \"2.10.5\"")
+        configuration.contains(":scala-version \"2.10.4\"")
         String javaVersion = ":java-home \"${javaHome()}\""
         configuration.contains(javaVersion)
 
         !configuration.contains(':runtime-deps')
 
-        configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.5\.jar"\)/ }
+        configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.4\.jar"\)/ }
 
         where:
         gradleVersion << supportedVersions
@@ -211,6 +212,138 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
 
         where:
         gradleVersion << supportedVersions
+    }
+
+    def "Javadoc jars are not added when downloadJavadoc is false"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            repositories {
+              mavenCentral()
+            }
+
+            dependencies {
+              compile 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+
+            ensime {
+              downloadJavadoc = false
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--info', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration != ~$/:doc-jars/$
+    }
+
+    def "Doc jars gets set properly"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            repositories {
+              mavenCentral()
+            }
+
+            dependencies {
+              compile 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--info', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:doc-jars \("[^\)]*?jackson-databind-2.6.4-javadoc.jar"/$
+        configuration =~ $/:doc-jars \("[^\)]*?jackson-annotations-2.6.0-javadoc.jar"/$
+        configuration =~ $/:doc-jars \("[^\)]*?jackson-core-2.6.4-javadoc.jar"/$
+
+        where:
+        gradleVersion << supportedVersions
+
+    }
+
+    def "Reference source roots are not added when downloadSources is false"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            repositories {
+              mavenCentral()
+            }
+
+            dependencies {
+              compile 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+
+            ensime {
+              downloadSources = false
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--info', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration != ~$/:reference-source-roots/$
+    }
+
+    def "Reference source roots gets set properly"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            repositories {
+              mavenCentral()
+            }
+
+            dependencies {
+              compile 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--info', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:reference-source-roots \("[^\)]*?jackson-databind-2.6.4-sources.jar"/$
+        configuration =~ $/:reference-source-roots \("[^\)]*?jackson-annotations-2.6.0-sources.jar"/$
+        configuration =~ $/:reference-source-roots \("[^\)]*?jackson-core-2.6.4-sources.jar"/$
+
+        where:
+        gradleVersion << supportedVersions
+
     }
 
     /***

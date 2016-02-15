@@ -11,13 +11,13 @@ class EnsimeTask extends DefaultTask {
 
   @TaskAction
   public void writeFile() {
-    // start to put the ensime file togther ...
+    // start to put the ensime file together ...
     Map<String, Object> properties = new LinkedHashMap<String, Object>()
     File outputFile = ensimeFile(project.extensions.ensime.targetFile)
 
-    project.extensions.ensime.with { ensime ->
+    project.extensions.ensime.with { EnsimeModel model ->
       project.logger.with { logger ->
-        logger.info("Ensime Model: ${ensime}")
+        logger.info("Ensime Model: ${model}")
 
         // root-dir ...
         assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
@@ -25,9 +25,9 @@ class EnsimeTask extends DefaultTask {
         logger.debug("EnsimeTask: Writing root-dir: ${project.rootDir.absolutePath}")
 
         // cache-dir ...
-        String ensimeCacheDir = ensime.cacheDir.empty ?
+        String ensimeCacheDir = model.cacheDir.empty ?
                 project.projectDir.absolutePath + EnsimeTask.DEF_ENSIME_CACHE :
-                ensime.cacheDir
+                model.cacheDir
         File ensimeCacheDirFile = new File(ensimeCacheDir)
         if(!ensimeCacheDirFile.exists()) {
           boolean wasAbleToCreateEnsimeCacheDir = ensimeCacheDirFile.mkdirs()
@@ -42,33 +42,33 @@ class EnsimeTask extends DefaultTask {
         logger.debug("EnsimeTask: Writing name: ${project.name}")
 
         // java-home ...
-        getLogger().info("Using extension ${ensime}")
-        String javaHome = ensime.javaHome?.absolutePath
+        getLogger().info("Using extension ${model}")
+        String javaHome = model.javaHome?.absolutePath
         assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
         properties.put("java-home", javaHome)
-        logger.debug("EnsimeTask: Writing java-home: ${ensime.javaHome}")
+        logger.debug("EnsimeTask: Writing java-home: ${model.javaHome}")
 
         // java-flags ...
-        if(!ensime.javaFlags.empty) {
-          properties.put("java-flags", ensime.javaFlags)
-          logger.debug("EnsimeTask: Writing java-flags: ${ensime.javaFlags}")
+        if (!model.javaFlags.empty) {
+          properties.put("java-flags", model.javaFlags)
+          logger.debug("EnsimeTask: Writing java-flags: ${model.javaFlags}")
         }
 
-        properties.put("formatting-prefs", ensime.formatting?.prefs)
+        properties.put("formatting-prefs", model.formatting?.prefs)
 
         // reference-source-roots ...
-        if(!ensime.referenceSourceRoots.empty) {
-          properties.put("reference-source-roots", ensime.referenceSourceRoots)
-          logger.debug("EnsimeTask: Writing reference-source-roots: ${ensime.referenceSourceRoots}")
+        if (!model.referenceSourceRoots.empty) {
+          properties.put("reference-source-roots", model.referenceSourceRoots)
+          logger.debug("EnsimeTask: Writing reference-source-roots: ${model.referenceSourceRoots}")
         }
 
         // scala-version ...
-        assert !ensime.scalaVersion.empty, "scala-version must be not empty"
-        properties.put("scala-version", ensime.scalaVersion)
-        logger.debug("EnsimeTask: Writing scala-version: ${ensime.scalaVersion}")
+        assert !model.scalaVersion.empty, "scala-version must be not empty"
+        properties.put("scala-version", model.scalaVersion)
+        logger.debug("EnsimeTask: Writing scala-version: ${model.scalaVersion}")
 
         // compiler-args ...
-        properties.put("compiler-args", ensime.compilerArgs)
+        properties.put("compiler-args", model.compilerArgs)
 
         Collection<Project> subprojects = project.allprojects.findAll { prj ->
           boolean supported = prj.plugins.hasPlugin('jp.leafytree.android-scala') ||
@@ -85,7 +85,7 @@ class EnsimeTask extends DefaultTask {
         properties.put("subprojects", subprojects.collect { subproject ->
           subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
                   new EnsimeAndroidModule(subproject).settings() :
-                  new SubprojectModule(subproject).settings()
+                  new SubprojectModule(subproject, model).settings()
         })
 
       }

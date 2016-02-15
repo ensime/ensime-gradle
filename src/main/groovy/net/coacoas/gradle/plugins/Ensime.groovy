@@ -82,7 +82,7 @@ class Ensime implements Plugin<Project> {
 class FormattingPrefsModel {
   def prefs = [:]
 
-  def methodMissing(String name, args) {
+  def methodMissing(String name, String[] args) {
     if (args.size() > 1)
       throw new IllegalArgumentException("The configuration for $name takes only one argument")
     if (args.size() < 1)
@@ -114,14 +114,17 @@ class EnsimeModel {
   // TODO - make :use-sbt work (this is not a string))
   // public String useSbt = ""
 
-  public String scalaVersion
-  public File javaHome
-  public String cacheDir = ""
+  String scalaVersion
+  File javaHome
+  String cacheDir = ""
 
-  public List<String> javaFlags = []
-  public List<String> referenceSourceRoots = []
-  public List<String> compilerArgs = []
-  public FormattingPrefsModel formatting = new FormattingPrefsModel()
+  List<String> javaFlags = []
+  List<String> referenceSourceRoots = []
+  List<String> compilerArgs = []
+  FormattingPrefsModel formatting = new FormattingPrefsModel()
+
+  boolean downloadSources = true
+  boolean downloadJavadoc = true
 
   // TODO - check ensime-server source code for other conv vars like :project-package
 
@@ -135,6 +138,8 @@ class EnsimeModel {
             ", javaFlags=" + javaFlags +
             ", referenceSourceRoots=" + referenceSourceRoots +
             ", compilerArgs=" + compilerArgs +
+            ", downloadSources = " + downloadSources +
+            ", downloadJavadoc = " + downloadJavadoc +
 	    ", ${formatting}" +
             '}';
   }
@@ -161,15 +166,15 @@ class EnsimeModel {
     }
   }
 
-  def cacheDir(String cacheDir) {
-    cacheDir(new File(cacheDir))
-  }
-
   def cacheDir(File cache) {
     if (!cache.exists()) {
       cache.mkdirs()
     }
     cacheDir = cache
+  }
+
+  def cacheDir(String cacheDir) {
+    cacheDir(new File(cacheDir))
   }
 
   public void formattingPrefs(Closure c) {
