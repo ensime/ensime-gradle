@@ -82,7 +82,7 @@ class Ensime implements Plugin<Project> {
 class FormattingPrefsModel {
   def prefs = [:]
 
-  def methodMissing(String name, String[] args) {
+  def methodMissing(String name, args) {
     if (args.size() > 1)
       throw new IllegalArgumentException("The configuration for $name takes only one argument")
     if (args.size() < 1)
