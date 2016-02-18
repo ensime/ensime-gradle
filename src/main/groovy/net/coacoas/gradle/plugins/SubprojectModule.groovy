@@ -5,6 +5,8 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.result.ArtifactResult
+import org.gradle.api.artifacts.result.DependencyResult
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.component.Artifact
 import org.gradle.api.specs.NotSpec
 import org.gradle.api.specs.Spec
@@ -46,8 +48,14 @@ class SubprojectModule {
         }
     }
 
-    List<ArtifactResult> getArtifacts(Class<? extends Artifact> clazz, Configuration configuration) {
-        def componentIds = configuration.incoming.resolutionResult.allDependencies.collect { it.selected.id }
+    List<ArtifactResult> getArtifacts(Configuration configuration, Class<? extends Artifact> clazz) {
+        def componentIds = configuration.incoming.resolutionResult.allDependencies.collectMany { DependencyResult dependency ->
+            if (dependency instanceof UnresolvedDependencyResult) {
+                []
+            } else {
+                [dependency.selected.id]
+            }
+        }
 
         project.dependencies.createArtifactResolutionQuery()
                 .forComponents(componentIds)
@@ -58,12 +66,12 @@ class SubprojectModule {
     }
 
     List<String> getReferenceSourceRoots() {
-        return getArtifacts(SourcesArtifact, project.configurations.testCompile)
+        return getArtifacts(project.configurations.testCompile, SourcesArtifact)
                 .collect { it.file.absolutePath }
     }
 
     List<String> getDocJars() {
-        return getArtifacts(JavadocArtifact, project.configurations.testCompile)
+        return getArtifacts(project.configurations.testCompile, JavadocArtifact)
                 .collect { it.file.absolutePath }
     }
 
