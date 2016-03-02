@@ -153,6 +153,13 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         then:
         module1BuildFile.exists()
         module2BuildFile.exists()
+        // top-level .ensime
+        File rootEnsime = new File(testProjectDir.root, '.ensime')
+        String rootConfig = rootEnsime.readLines()
+        1 == ( rootConfig =~ /:name \"module1\"/ ).count // should only be 1 "module1" subproject
+        1 == ( rootConfig =~ /:name \"module2\"/ ).count // should only be 1 "module2" subproject
+
+        // module1 and module2 .ensime
         File ensime1 = new File(module1BuildFile.getParent(), '.ensime')
         File ensime2 = new File(module2BuildFile.getParent(), '.ensime')
         ensime1.exists()
