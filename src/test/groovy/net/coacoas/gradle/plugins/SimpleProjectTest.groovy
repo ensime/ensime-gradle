@@ -114,6 +114,59 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         gradleVersion << supportedVersions
     }
 
+    def "subprojects generated for dependsOnModules"() {
+        given:
+        // create a projet with two subprojects, module1 and module2.
+        // module 1 has no depencencies and module2 depends on module1
+        testProjectDir.newFolder("module1")
+        File module1BuildFile = testProjectDir.newFile("module1/build.gradle")
+        testProjectDir.newFolder("module2")
+        File module2BuildFile = testProjectDir.newFile("module2/build.gradle")
+        module2BuildFile << """
+            dependencies {
+              compile project(':module1')
+            }
+        """
+
+        File settings = testProjectDir.newFile("settings.gradle")
+        settings << """
+            include 'module1'
+            include 'module2'
+        """
+        buildFile << """
+            allprojects {
+              apply plugin: 'org.ensime.gradle'
+              apply plugin: 'java'
+
+              repositories {
+                mavenCentral()
+              }
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--info', '--stacktrace')
+                .build()
+
+        then:
+        module1BuildFile.exists()
+        module2BuildFile.exists()
+        File ensime1 = new File(module1BuildFile.getParent(), '.ensime')
+        File ensime2 = new File(module2BuildFile.getParent(), '.ensime')
+        ensime1.exists()
+        ensime2.exists()
+        String config1 = ensime1.readLines()
+        String config2 = ensime2.readLines()
+        config1.contains(":depends-on-modules nil")
+        config2.contains(":depends-on-modules (\":module1\")")
+        config2 ==~ ".*subprojects \\(\\(:name \"module2\".*\\(:name \"module1\".*"
+
+        where:
+        gradleVersion << supportedVersions
+    }
+
     def "Scala default source roots are properly described"() {
         given:
         buildFile << """
