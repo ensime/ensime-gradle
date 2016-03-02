@@ -98,7 +98,7 @@ class EnsimeTask extends DefaultTask {
               }
               allSubs
           }
-        })
+        }.unique { a, b -> a.get("name")+a.get("target") <=> b.get("name")+b.get("target") })
       }
     }
 
