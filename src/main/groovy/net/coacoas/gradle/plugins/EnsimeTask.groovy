@@ -82,12 +82,23 @@ class EnsimeTask extends DefaultTask {
         logger.info("Configuring subprojects $subprojects")
 
         // process subprojects ...
-        properties.put("subprojects", subprojects.collect { subproject ->
-          subproject.plugins.hasPlugin('jp.leafytree.android-scala') ?
-                  new EnsimeAndroidModule(subproject).settings() :
-                  new SubprojectModule(subproject, model).settings()
+        properties.put("subprojects", subprojects.collectMany { subproject ->
+          if(subproject.plugins.hasPlugin('jp.leafytree.android-scala')) {
+              new EnsimeAndroidModule(subproject).settings()
+          } else {
+              SubprojectModule module = new SubprojectModule(subproject, model)
+              List<Map<String, Object>> allSubs = [ module.settings() ]
+              module.getProjectDependencies().each { dep ->
+                Project depProject = project.findProject(dep)
+                if(null == depProject) {
+                  logger.warn("Unable to find project dependency $dep")
+                } else {
+                  allSubs.add(new SubprojectModule(depProject, model).settings())
+                }
+              }
+              allSubs
+          }
         })
-
       }
     }
 
