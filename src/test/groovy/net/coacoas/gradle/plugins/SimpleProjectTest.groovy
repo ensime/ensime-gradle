@@ -32,7 +32,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
-                .withArguments('ensime', '--debug')
+                .withArguments('ensime', '--debug', '--stacktrace')
 //                .withDebug(true)
                 .build()
 

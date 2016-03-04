@@ -1,13 +1,19 @@
 package net.coacoas.gradle.plugins
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.tasks.TaskAction
+
 /*
  * Implementation of the 'ensime' task.
  */
 class EnsimeTask extends DefaultTask {
   private static final String DEF_ENSIME_FILE = "/.ensime"
   private static final String DEF_ENSIME_CACHE = "/.ensime_cache.d"
+  private static final String DEFAULT_SCALA_VERSION = "2.11.7"
 
   @TaskAction
   public void writeFile() {
@@ -42,11 +48,8 @@ class EnsimeTask extends DefaultTask {
         logger.debug("EnsimeTask: Writing name: ${project.name}")
 
         // java-home ...
-        getLogger().info("Using extension ${model}")
-        String javaHome = model.javaHome?.absolutePath
-        assert javaHome != null && !javaHome.empty, "ensime.javaHome must be set"
-        properties.put("java-home", javaHome)
-        logger.debug("EnsimeTask: Writing java-home: ${model.javaHome}")
+        properties.put("java-home", this.findJavaHome(model))
+        logger.debug("EnsimeTask: Writing java-home: ${properties['java-home']}")
 
         // java-flags ...
         if (!model.javaFlags.empty) {
@@ -63,8 +66,7 @@ class EnsimeTask extends DefaultTask {
         }
 
         // scala-version ...
-        assert !model.scalaVersion.empty, "scala-version must be not empty"
-        properties.put("scala-version", model.scalaVersion)
+        properties.put("scala-version", this.findScalaVersion(project))
         logger.debug("EnsimeTask: Writing scala-version: ${model.scalaVersion}")
 
         // compiler-args ...
@@ -111,5 +113,46 @@ class EnsimeTask extends DefaultTask {
     }
     project.logger.debug("EnsimeTask: Writing ensime configuration to ${fileName} ...")
     file
+  }
+
+  List<String> lookupScalaVersions(DependencySet dependencies) {
+    List<String> scalaVersions = dependencies.findAll {
+      it.group.equals('org.scala-lang') &&
+        it.name.equals('scala-library')
+    }.collect { it.version }.sort()
+
+    project.logger.debug("Found scala versions: ${scalaVersions}")
+    scalaVersions
+  }
+
+  File findJavaHome(EnsimeModel model) {
+    model.javaHome ?: {
+      File home = new File(System.getProperty('java.home'))
+      home.name.equals('jre') ? home.getParentFile() : home
+    }.call();
+  }
+
+  String findScalaVersion(Project project) {
+    return project.extensions.ensime.scalaVersion ?: {
+      Collection<Configuration> ensimeConfigurations = ['compile', 'testCompile', 'play'].
+              collectMany {
+                try {
+                  [project.configurations.getByName(it)]
+                } catch (UnknownConfigurationException ignored) {
+                  []
+                }
+              }
+      project.logger.debug("Configurations found: ${ensimeConfigurations}")
+
+      List<String> versions = ensimeConfigurations
+              .collect { it.allDependencies }
+              .collectMany { lookupScalaVersions(it) }
+              .sort()
+      project.logger.debug("Found Scala versions ${versions}")
+
+      String version = versions.empty ? DEFAULT_SCALA_VERSION : versions.head()
+      project.logger.debug("Using Scala version ${version}")
+      version
+    }.call();
   }
 }

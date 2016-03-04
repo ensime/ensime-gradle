@@ -4,6 +4,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ArtifactResult
 import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
@@ -50,10 +52,11 @@ class SubprojectModule {
 
     List<ArtifactResult> getArtifacts(Configuration configuration, Class<? extends Artifact> clazz) {
         def componentIds = configuration.incoming.resolutionResult.allDependencies.collectMany { DependencyResult dependency ->
-            if (dependency instanceof UnresolvedDependencyResult) {
-                []
+            def id = dependency.selected.id
+            if (id instanceof ModuleComponentIdentifier) {
+                [id]
             } else {
-                [dependency.selected.id]
+                []
             }
         }
 
@@ -68,6 +71,7 @@ class SubprojectModule {
     List<String> getReferenceSourceRoots() {
         return getArtifacts(project.configurations.testCompile, SourcesArtifact)
                 .collect { it.file.absolutePath }
+
     }
 
     List<String> getDocJars() {
