@@ -5,11 +5,11 @@ package net.coacoas.gradle.plugins
  */
 class SExp {
   static String format(Map map) { 
-      map.isEmpty() ? 'nil' : '(' + map.entrySet().collect { ":${it.key} " + format(it.value)}.join('\n') + ')'
+      '(' + map.entrySet().collect { ":${it.key} " + format(it.value)}.join('\n') + ')'
   }
 
   static String format(List list) { 
-      list.isEmpty() ? 'nil' : '(' + list.collect { format(it) }.join(' ') + ')'
+      '(' + list.collect { format(it) }.join(' ') + ')'
   }
 
   static String format(String string) { 
