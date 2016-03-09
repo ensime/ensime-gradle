@@ -45,6 +45,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         configuration.contains(":scala-version \"2.10.4\"")
         String javaVersion = ":java-home \"${javaHome()}\""
         configuration.contains(javaVersion)
+        configuration.contains(":java-flags ()")
 
         !configuration.contains(':runtime-deps')
 
@@ -75,6 +76,7 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         String configuration = ensime.readLines()
         configuration.contains(":scala-version \"2.11.7\"")
         configuration.contains(":java-home \"${javaHome()}\"")
+        configuration.contains(":java-flags ()")
         !configuration.contains(':runtime-deps')
 
         where:

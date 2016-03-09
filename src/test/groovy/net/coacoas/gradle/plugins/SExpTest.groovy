@@ -23,4 +23,14 @@ public class SExpTest {
     def setting = [ bob : ["c:\\a.jar", "c:\\b.jar" ] ]
     assertThat(SExp.format(setting), both(containsString("c:\\\\a.jar")).and(containsString("c:\\\\b.jar")))
   }
+
+  @Test
+  public void testEmptyList() {
+    assertThat(SExp.format([]), is("()"))
+  }
+
+  @Test
+  public void testEmptyMap() {
+    assertThat(SExp.format([:]), is("()"))
+  }
 }

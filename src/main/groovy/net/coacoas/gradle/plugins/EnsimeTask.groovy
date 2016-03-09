@@ -52,18 +52,14 @@ class EnsimeTask extends DefaultTask {
         logger.debug("EnsimeTask: Writing java-home: ${properties['java-home']}")
 
         // java-flags ...
-        if (!model.javaFlags.empty) {
-          properties.put("java-flags", model.javaFlags)
-          logger.debug("EnsimeTask: Writing java-flags: ${model.javaFlags}")
-        }
+        properties.put("java-flags", model.javaFlags)
+        logger.debug("EnsimeTask: Writing java-flags: ${model.javaFlags}")
 
         properties.put("formatting-prefs", model.formatting?.prefs)
 
         // reference-source-roots ...
-        if (!model.referenceSourceRoots.empty) {
-          properties.put("reference-source-roots", model.referenceSourceRoots)
-          logger.debug("EnsimeTask: Writing reference-source-roots: ${model.referenceSourceRoots}")
-        }
+        properties.put("reference-source-roots", model.referenceSourceRoots)
+        logger.debug("EnsimeTask: Writing reference-source-roots: ${model.referenceSourceRoots}")
 
         // scala-version ...
         properties.put("scala-version", this.findScalaVersion(project))
