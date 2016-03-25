@@ -110,15 +110,17 @@ class SubprojectModule {
             project.logger.debug("EnsimeModule: Writing doc-jars: ${docJars}")
         }
 
-        // target ...
-        assert !project.sourceSets.main.output.classesDir.absolutePath.empty : "target cannot be empty"
-        properties.put("target", project.sourceSets.main.output.classesDir.absolutePath)
-        project.logger.debug("EnsimeModule: Writing target: ${project.sourceSets.main.output.classesDir.absolutePath}")
+        // targets ...
+        assert !project.sourceSets.main.output.classesDir.absolutePath.empty : "targets cannot be empty"
+        List<String> targets = [project.sourceSets.main.output.classesDir.absolutePath]
+        properties.put("targets", targets)
+        project.logger.debug("EnsimeModule: Writing targets: ${targets}")
 
         // test-target ...
-        assert !project.sourceSets.test.output.classesDir.absolutePath.empty : "test-target cannot be empty"
-        properties.put("test-target", project.sourceSets.test.output.classesDir.absolutePath)
-        project.logger.debug("EnsimeModule: Writing test-target: ${project.sourceSets.test.output.classesDir.absolutePath}")
+        assert !project.sourceSets.test.output.classesDir.absolutePath.empty : "test-targets cannot be empty"
+        List<String> testTargets = [project.sourceSets.test.output.classesDir.absolutePath]
+        properties.put("test-targets", testTargets)
+        project.logger.debug("EnsimeModule: Writing test-targets: ${testTargets}")
 
         // depends-on-modules ...
         List<String> dependencies = getProjectDependencies()
