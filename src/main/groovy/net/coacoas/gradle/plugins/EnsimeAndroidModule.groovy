@@ -40,17 +40,19 @@ class EnsimeAndroidModule {
     properties.put("source-roots", sourceRoots)
     project.logger.debug("EnsimeModule: Writing source-roots: ${sourceRoots}")
 
-    // target ...
+    // targets ...
     File targetClassesDir = new File("${project.buildDir}/classes/debug")
-    assert !targetClassesDir.absolutePath.empty : "target cannot be empty"
-    properties.put("target", targetClassesDir.absolutePath)
-    project.logger.debug("EnsimeModule: Writing target: ${targetClassesDir.absolutePath}")
+    assert !targetClassesDir.absolutePath.empty : "targets cannot be empty"
+    List<String> targets = [targetClassesDir.absolutePath]
+    properties.put("targets", targets)
+    project.logger.debug("EnsimeModule: Writing targets: ${targets}")
 
-    // test-target ...
+    // test-targets ...
     File testClassesDir = new File("${project.buildDir}/classes/androidTest")
-    assert !testClassesDir.absolutePath.empty : "test-target cannot be empty"
-    properties.put("test-target", testClassesDir.absolutePath)
-    project.logger.debug("EnsimeModule: Writing test-target: ${testClassesDir.absolutePath}")
+    assert !testClassesDir.absolutePath.empty : "test-targets cannot be empty"
+    List<String> testTargets = [testClassesDir.absolutePath]
+    properties.put("test-targets", testTargets)
+    project.logger.debug("EnsimeModule: Writing test-targets: ${testTargets}")
 
     // depends-on-modules ...
     // TODO - fix dependencies
