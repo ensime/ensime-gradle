@@ -41,12 +41,20 @@ class SubprojectModule {
                 .collect { it.path }
     }
 
-    List<String> classPath(String scope) {
-        project.configurations[scope]
-               .resolvedConfiguration
-               .getFirstLevelModuleDependencies(new NotSpec(isProject))
-               .collectMany { dependency ->
-            dependency.allModuleArtifacts.collect { it.file }
+    List<String> classPath(String... scopes) {
+        scopes.collectMany { getConfiguration(it)  }
+             .collect { it.resolvedConfiguration }
+             .collectMany { it.getFirstLevelModuleDependencies(new NotSpec(isProject)) }
+             .collectMany { dependency ->
+                dependency.allModuleArtifacts.collect { it.file }
+        }
+    }
+
+    List<Configuration> getConfiguration(String scope) {
+        try {
+            [project.configurations[scope]] ?: []
+        } catch (Exception e) {
+            []
         }
     }
 
@@ -128,7 +136,7 @@ class SubprojectModule {
         project.logger.debug("EnsimeModule: Writing depends-on-modules: ${dependencies}")
 
         //  Classpath modifications
-        properties.put("compile-deps", classPath('compile'))
+        properties.put("compile-deps", classPath('compile', 'compileOnly', 'providedCompile'))
         properties.put("test-deps", classPath('testCompile'))
 
         // reference-source-roots ...
