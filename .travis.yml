@@ -11,7 +11,7 @@ jdk:
 - oraclejdk7
 - openjdk7
 - openjdk6
-before_install: echo -e "gradle.publish.key=$APIKEY\ngradle.publish.secret=$APISECRET" >> gradle.properties
+before_install: echo -e "\n\ngradle.publish.key=$APIKEY\ngradle.publish.secret=$APISECRET" >> gradle.properties
 deploy:
   - provider: script
     skip_cleanup: true
