@@ -7,7 +7,7 @@ import spock.lang.Specification
 public class SimpleProjectTest extends Specification implements ProjectSpecification {
     @Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
 
-    final static def supportedVersions = ['2.1', '2.6', '2.9']
+    final static def supportedVersions = ['2.1', '2.6', '2.13']
 
     def setup() {
         setupProject(testProjectDir)
@@ -451,4 +451,38 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         where:
         gradleVersion << supportedVersions
     }
+
+    def "Test compileOnly libs are added to compile-deps"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'scala'
+
+            repositories {
+                jcenter()
+            }
+
+            dependencies {
+                compile "org.scala-lang:scala-library:2.11.7"
+                compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withGradleVersion(gradleVersion)
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:compile-deps \("[^\)]*?jackson-databind-2.6.4.jar"/$
+
+        where:
+        gradleVersion << ['2.12']
+    }
+
 }
