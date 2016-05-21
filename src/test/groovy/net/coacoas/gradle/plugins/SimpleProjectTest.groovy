@@ -485,4 +485,42 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         gradleVersion << ['2.12']
     }
 
+    def "Custom configuraitons that extend from compile should show in compile-deps"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'scala'
+
+            repositories {
+                jcenter()
+            }
+
+            configurations {
+                provided
+                provided.extendsFrom(compile)
+            }
+
+            dependencies {
+                compile "org.scala-lang:scala-library:2.11.7"
+                provided 'com.fasterxml.jackson.core:jackson-databind:2.6.4'
+            }
+        """
+
+        when:
+        GradleRunner.create()
+                .withGradleVersion(gradleVersion)
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:compile-deps \("[^\)]*?jackson-databind-2.6.4.jar"/$
+
+        where:
+        gradleVersion << ['2.12']
+    }
+
 }

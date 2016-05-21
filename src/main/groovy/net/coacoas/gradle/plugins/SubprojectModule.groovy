@@ -1,14 +1,11 @@
 package net.coacoas.gradle.plugins
-
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ArtifactResult
 import org.gradle.api.artifacts.result.DependencyResult
-import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.component.Artifact
 import org.gradle.api.specs.NotSpec
 import org.gradle.api.specs.Spec
@@ -41,9 +38,8 @@ class SubprojectModule {
                 .collect { it.path }
     }
 
-    List<String> classPath(String... scopes) {
-        scopes.collectMany { getConfiguration(it)  }
-             .collect { it.resolvedConfiguration }
+    List<String> classPath(Collection<Configuration> scopes) {
+        scopes.collect { it.resolvedConfiguration }
              .collectMany { it.getFirstLevelModuleDependencies(new NotSpec(isProject)) }
              .collectMany { dependency ->
                 dependency.allModuleArtifacts.collect { it.file }
@@ -136,12 +132,24 @@ class SubprojectModule {
         project.logger.debug("EnsimeModule: Writing depends-on-modules: ${dependencies}")
 
         //  Classpath modifications
-        properties.put("compile-deps", classPath('compile', 'compileOnly', 'providedCompile'))
-        properties.put("test-deps", classPath('testCompile'))
+        properties.put("compile-deps", classPath(compileConfigs()))
+        properties.put("test-deps", classPath(testCompileConfigs()))
 
         // reference-source-roots ...
         // right now this can only be configure in/through EnsimeTask
 
         properties
+    }
+
+    Collection<Configuration> testCompileConfigs() {
+        project.configurations.findAll { config ->
+            config.hierarchy.contains(project.configurations['testCompile'])
+        }
+    }
+
+    Collection<Configuration> compileConfigs() {
+        project.configurations.findAll { config ->
+            config.hierarchy.contains(project.configurations['compile'])
+        } - testCompileConfigs()
     }
 }
