@@ -1,8 +1,10 @@
-  package net.coacoas.gradle.plugins
+package net.coacoas.gradle.plugins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 
 import java.util.logging.Logger
+
 
 /**
  * The Ensime plugin creates an ensime task that allows the build script
@@ -12,15 +14,18 @@ import java.util.logging.Logger
  * &copy; Bill Carlson 2012
  */
 class Ensime implements Plugin<Project> {
-  public static final String TASK_NAME="ensime"
+  public static final String ENSIME_TASK_NAME ="ensime"
   public static Logger log = Logger.getLogger(Ensime.class.name)
 
   @Override
   public void apply(Project project) {
     project.with {
       if (!plugins.hasPlugin(Ensime)) {
-        extensions.create(TASK_NAME, EnsimeModel)
-        tasks.create(TASK_NAME, EnsimeTask)
+        extensions.create(ENSIME_TASK_NAME, EnsimeModel)
+        tasks.create([(Task.TASK_NAME): ENSIME_TASK_NAME,
+                      (Task.TASK_GROUP): 'IDE',
+                      (Task.TASK_DESCRIPTION): 'Generates an ENSIME configuration (.ensime)',
+                      (Task.TASK_TYPE): EnsimeTask])
       }
     }
   }
