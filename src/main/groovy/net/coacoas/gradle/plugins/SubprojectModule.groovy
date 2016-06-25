@@ -73,14 +73,18 @@ class SubprojectModule {
     }
 
     List<String> getReferenceSourceRoots() {
-        return getArtifacts(project.configurations.testCompile, SourcesArtifact)
-                .collect { it.file.absolutePath } .addAll(model.additionalSources)
+        List<String> artifacts = getArtifacts(project.configurations.testCompile, SourcesArtifact)
+                .collect { it.file.absolutePath }
+        artifacts.addAll(model.additionalSources)
+        return artifacts
 
     }
 
     List<String> getDocJars() {
-        return getArtifacts(project.configurations.testCompile, JavadocArtifact)
-                .collect { it.file.absolutePath } .addAll(model.additionalDocs)
+        List<String> artifacts = getArtifacts(project.configurations.testCompile, JavadocArtifact)
+                .collect { it.file.absolutePath }
+        artifacts.addAll(model.additionalDocs)
+        return artifacts
     }
 
     List<String> getSourceSets() {
@@ -132,7 +136,9 @@ class SubprojectModule {
         project.logger.debug("EnsimeModule: Writing depends-on-modules: ${dependencies}")
 
         //  Classpath modifications
-        properties.put("compile-deps", classPath(compileConfigs()).addAll(model.additionalJars))
+        List<String> compileDeps = classPath(compileConfigs())
+        compileDeps.addAll(model.additionalJars)
+        properties.put("compile-deps", compileDeps)
         properties.put("test-deps", classPath(testCompileConfigs()))
 
         // reference-source-roots ...
