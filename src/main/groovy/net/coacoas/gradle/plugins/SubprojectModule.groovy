@@ -38,12 +38,21 @@ class SubprojectModule {
                 .collect { it.path }
     }
 
+    def canResolve(scope) {
+        try { 
+            scope.isCanBeResolved()
+        } catch (MissingMethodException e) { 
+            true
+        } 
+    }
+
     List<String> classPath(Collection<Configuration> scopes) {
-        scopes.collect { it.resolvedConfiguration }
-             .collectMany { it.getFirstLevelModuleDependencies(new NotSpec(isProject)) }
-             .collectMany { dependency ->
-                dependency.allModuleArtifacts.collect { it.file }
-        }
+        scopes.findAll { canResolve(it) }
+              .collect { it.resolvedConfiguration }  
+              .collectMany { it.getFirstLevelModuleDependencies(new NotSpec(isProject)) }
+              .collectMany { dependency ->
+                  dependency.allModuleArtifacts.collect { it.file }
+              }
     }
 
     List<Configuration> getConfiguration(String scope) {
