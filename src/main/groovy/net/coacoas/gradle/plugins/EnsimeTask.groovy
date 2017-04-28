@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.tasks.TaskAction
 
+
 /*
  * Implementation of the 'ensime' task.
  */
@@ -22,9 +23,54 @@ class EnsimeTask extends DefaultTask {
     File outputFile = ensimeFile(project.extensions.ensime.targetFile)
 
     project.extensions.ensime.with { EnsimeModel model ->
+
+      project.repositories.mavenLocal()
+      project.repositories.mavenCentral()
+
+      //if snapshot is used, include the snapshot repository
+      //this avoids having to manually edit the build script
+      if(model.serverVersion.contains("SNAPSHOT")){
+	project.repositories.maven {
+		name 'Maven sonatype snapshots'
+		url 'https://oss.sonatype.org/content/repositories/snapshots'	
+	}
+      }
+      else{
+	project.repositories.maven {
+		name 'Maven sonatype snapshots'
+		url 'https://oss.sonatype.org/content/repositories/public'
+	}
+      }
+      
+      project.configurations.create('ensime')
+      project.configurations.ensime.transitive = true
+
+      def scalaVersion = (model.scalaVersion ?: findScalaVersion(project))
+      def m = scalaVersion =~ /\d+\.\d+/
+      def serverScalaVersion = m.count ? m[0] : null
+      
+      project.dependencies.add('ensime', "org.ensime:server_${serverScalaVersion}:${model.serverVersion}")
+
       project.logger.with { logger ->
         logger.info("Ensime Model: ${model}")
 
+        logger.debug("Ensime dependencies: ${project.configurations.ensime.files}")
+      
+        logger.debug("Tools: ${this.findJavaHome(model)}/lib/tools.jar")
+	
+        //copy all ensime server dependencies
+        //see ~/.gradle/init.gradle AddEnsimePlugin
+        project.copy {
+          from(project.configurations.ensime.files)
+          into(model.serverJarsDir)
+        }
+        //copy the java tools.jar
+        project.copy {
+	  from("${this.findJavaHome(model)}/lib/tools.jar")
+          into(model.serverJarsDir)
+        }
+      
+    
         // root-dir ...
         assert !project.rootDir.absolutePath.empty : "root-dir must be not empty"
         properties.put("root-dir", project.rootDir.absolutePath)
@@ -42,6 +88,10 @@ class EnsimeTask extends DefaultTask {
         properties.put("cache-dir", ensimeCacheDir)
         logger.debug("EnsimeTask: Writing cache-dir: ${ensimeCacheDir}")
 
+	def serverJars = new File("build/ensime").listFiles().collect { it.absolutePath }
+	properties.put("ensime-server-jars", serverJars)
+	logger.debug("ensimeTask: Writing ensime-server-jars: ${serverJars}")
+	
         // (project) name ...
         assert !project.name.empty, "project.name must be not empty"
         properties.put("name", project.name)
@@ -62,8 +112,8 @@ class EnsimeTask extends DefaultTask {
         logger.debug("EnsimeTask: Writing reference-source-roots: ${model.referenceSourceRoots}")
 
         // scala-version ...
-        properties.put("scala-version", this.findScalaVersion(project))
-        logger.debug("EnsimeTask: Writing scala-version: ${model.scalaVersion}")
+        properties.put("scala-version", scalaVersion)
+        logger.debug("EnsimeTask: Writing scala-version: ${scalaVersion}")
 
         // compiler-args ...
         properties.put("compiler-args", model.compilerArgs)
