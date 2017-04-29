@@ -35,7 +35,7 @@ class EnsimeTask extends DefaultTask {
 		url 'https://oss.sonatype.org/content/repositories/snapshots'	
 	}
       }
-      else{
+      else {
 	project.repositories.maven {
 		name 'Maven sonatype snapshots'
 		url 'https://oss.sonatype.org/content/repositories/public'
