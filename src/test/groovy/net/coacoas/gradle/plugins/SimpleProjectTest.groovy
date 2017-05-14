@@ -47,7 +47,9 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         configuration.contains(javaVersion)
         configuration.contains(":java-flags ()")
 
-        !configuration.contains(':runtime-deps')
+	configuration.find { it.matches(":ensime-server-jars.*") }
+
+	!configuration.contains(':runtime-deps')
 
         configuration.find { it =~ /^:compile\-deps\s+\(".*scala\-library\-2\.10\.4\.jar"\)/ }
 
@@ -73,11 +75,17 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         result.output.contains("Using Scala version 2.11.7")
         File ensime = new File(testProjectDir.root, '.ensime')
         ensime.exists()
-        String configuration = ensime.readLines()
+
+        List<String> configuration = ensime.readLines()
         configuration.contains(":scala-version \"2.11.7\"")
-        configuration.contains(":java-home \"${javaHome()}\"")
+
+        String javaVersion = ":java-home \"${javaHome()}\""
+        configuration.contains(javaVersion)
         configuration.contains(":java-flags ()")
-        !configuration.contains(':runtime-deps')
+
+	configuration.find { it.contains(':ensime-server-jars') }
+
+	!configuration.contains(':runtime-deps')
 
         where:
         gradleVersion << supportedVersions

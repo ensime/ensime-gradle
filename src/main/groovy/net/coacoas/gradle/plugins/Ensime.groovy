@@ -70,6 +70,12 @@ class EnsimeModel {
   File javaHome
   String cacheDir = ""
 
+  //The ensime server jar and dependencies are downloaded to this location
+  //then added to the ensime-server-jars property in the .ensime file
+  String serverJarsDir = "build/ensime"
+
+  String serverVersion = "1.0.1"
+  
   List<String> javaFlags = []
   List<String> referenceSourceRoots = []
   List<String> compilerArgs = []
@@ -87,6 +93,8 @@ class EnsimeModel {
             ", scalaVersion=" + scalaVersion +
             ", javaHome=" + javaHome +
             ", cacheDir=" + cacheDir +
+            ", serverJarsDir=" + serverJarsDir +
+            ", serverVersion=" + serverVersion +
             ", javaFlags=" + javaFlags +
             ", referenceSourceRoots=" + referenceSourceRoots +
             ", compilerArgs=" + compilerArgs +
