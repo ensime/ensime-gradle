@@ -531,4 +531,36 @@ public class SimpleProjectTest extends Specification implements ProjectSpecifica
         gradleVersion << ['2.12']
     }
 
+    def "Test that additional- Sources, Jars and Docs show up in .ensime"() {
+        given:
+        buildFile << """
+            apply plugin: 'org.ensime.gradle'
+            apply plugin: 'java'
+
+            ensime {
+              additionalSources = ["libs/sources.jar"]
+              additionalJars = ["libs/compile.jar"]
+              additionalDocs = ["libs/docs.jar"]
+            }
+
+        """
+
+        when:
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ensime', '--debug', '--stacktrace')
+                .build()
+
+        then:
+        File ensime = new File(testProjectDir.root, '.ensime')
+        ensime.exists()
+        String configuration = ensime.readLines()
+        configuration =~ $/:reference-source-roots \("[^\)]*?libs/sources\.jar"/$
+        configuration =~ $/:compile-deps \("[^\)]*?libs/compile\.jar"/$
+        configuration =~ $/:doc-jars \("[^\)]*?libs/docs\.jar"/$
+
+        where:
+        gradleVersion << supportedVersions
+    }
+
 }

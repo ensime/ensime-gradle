@@ -80,6 +80,9 @@ class EnsimeModel {
   List<String> referenceSourceRoots = []
   List<String> compilerArgs = []
   FormattingPrefsModel formatting = new FormattingPrefsModel()
+  List<String> additionalSources = []
+  List<String> additionalJars = []
+  List<String> additionalDocs = []
 
   boolean downloadSources = true
   boolean downloadJavadoc = true
@@ -100,6 +103,9 @@ class EnsimeModel {
             ", compilerArgs=" + compilerArgs +
             ", downloadSources = " + downloadSources +
             ", downloadJavadoc = " + downloadJavadoc +
+            ", additionalSources = " + additionalSources +
+            ", additionalJars = " + additionalJars +
+            ", additionalDocs = " + additionalDocs +
 	    ", ${formatting}" +
             '}';
   }
