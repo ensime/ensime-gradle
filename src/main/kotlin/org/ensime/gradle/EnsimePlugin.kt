@@ -19,11 +19,16 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class EnsimePlugin : Plugin<Project> {
-    override fun apply(project: Project?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun apply(project: Project) {
+        with(project) {
+            extensions.create("ensime", EnsimePluginExtension::class.java)
+            tasks.create("ensime", EnsimeTask::class.java)
+        }
     }
 
     companion object {
         val ENSIME_PLUGIN_NAME = "ensime"
+        val DEFAULT_SCALA_VERSION = "2.12.4"
+        val DEFAULT_SERVER_VERSION = "1.0.1"
     }
 }

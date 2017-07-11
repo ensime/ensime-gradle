@@ -28,7 +28,7 @@ class EnsimePluginTest : BehaviorSpec() {
         val supportedVersions = listOf("2.8", "2.11", "3.1", "3.5", "4.0")
 
         supportedVersions.forEach { gradleVersion ->
-            Given("A basic project") {
+            Given("A basic project for version $gradleVersion") {
                 val rootDir = Files.createTempDir()
                 val buildFile = File(rootDir, "build.gradle")
                 buildFile.writeText("""

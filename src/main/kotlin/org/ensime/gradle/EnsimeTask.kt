@@ -13,6 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ensime.gradle.model
+package org.ensime.gradle
 
-data class ProjectId(val project: String, val config: String)
+import org.ensime.gradle.model.EnsimeConfig
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
+
+/**
+ * Created by bcarlson on 7/2/17.
+ */
+open class EnsimeTask : DefaultTask() {
+    @TaskAction
+    fun generateConfig() {
+        val taskConfig = project.extensions.getByType(EnsimePluginExtension::class.java)
+        val config = EnsimeConfig.fromGradleProject(project)
+    }
+}
