@@ -15,18 +15,19 @@
  */
 package org.ensime.gradle
 
-import java.nio.file.Path
-import java.nio.file.Paths
+import org.gradle.api.Project
+import org.ensime.gradle.extensions.findScalaVersion
+import java.io.File
 
-open class EnsimePluginExtension {
+open class EnsimePluginExtension(val project: Project) {
     private var _scalaVersion: String? = null
-    var scalaVersion: String?
-        get() = _scalaVersion
-        set(value) {
-            println("Setting scala version to $value")
-            _scalaVersion = value
-        }
-    var serverVersion: String? = null
+    var scalaVersion: String
+        get() = _scalaVersion ?: project.findScalaVersion() ?: EnsimePlugin.DEFAULT_SCALA_VERSION
+        set(value) { _scalaVersion = value }
+
+    var serverVersion: String = EnsimePlugin.DEFAULT_SERVER_VERSION
+    var ensimeFile: File = File(EnsimePlugin.DEFAULT_ENSIME_FILE)
+
 //        ,var javaHome: Path? = Paths.get(System.getProperty("java.home"))
 //        ,var cacheDir: Path? = Paths.get("./ensime_cache")
 //        ,var serverJarsDir: Path? = Paths.get("build/ensime")

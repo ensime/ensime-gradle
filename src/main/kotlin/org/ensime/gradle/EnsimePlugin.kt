@@ -21,8 +21,8 @@ import org.gradle.api.Project
 class EnsimePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
-            extensions.create("ensime", EnsimePluginExtension::class.java)
-            tasks.create("ensime", EnsimeTask::class.java)
+            extensions.create(ENSIME_PLUGIN_NAME, EnsimePluginExtension::class, project)
+            tasks.create(ENSIME_PLUGIN_NAME, EnsimeTask::class.java)
         }
     }
 
@@ -30,5 +30,6 @@ class EnsimePlugin : Plugin<Project> {
         val ENSIME_PLUGIN_NAME = "ensime"
         val DEFAULT_SCALA_VERSION = "2.12.4"
         val DEFAULT_SERVER_VERSION = "1.0.1"
+        val DEFAULT_ENSIME_FILE = ".ensime"
     }
 }

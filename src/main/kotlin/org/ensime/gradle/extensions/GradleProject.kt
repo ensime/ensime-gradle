@@ -21,14 +21,11 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.UnknownConfigurationException
 
-fun Project.findScalaVersion(): String {
+fun Project.findScalaVersion(): String? {
     val extClass: Class<EnsimePluginExtension> = EnsimePluginExtension::class.java
     val extension = extensions.getByType(extClass)
     logger.debug("Found extension $extension")
-    val version = extension?.scalaVersion
-            ?: extractScalaVersion(this)
-            ?: EnsimePlugin.DEFAULT_SCALA_VERSION
-    logger.debug("Using Scala version $version")
+    val version = extractScalaVersion(this)
     return version
 }
 

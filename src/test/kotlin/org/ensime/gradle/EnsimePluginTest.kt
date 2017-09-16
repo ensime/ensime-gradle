@@ -18,6 +18,7 @@ package org.ensime.gradle
 import com.google.common.io.Files
 import io.kotlintest.matchers.include
 import io.kotlintest.matchers.should
+import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
@@ -25,7 +26,7 @@ import java.io.File
 class EnsimePluginTest : BehaviorSpec() {
 
     init {
-        val supportedVersions = listOf("2.8", "2.11", "3.1", "3.5", "4.0")
+        val supportedVersions = listOf("2.8", "2.11", "3.1", "3.5", "4.0.1")
 
         supportedVersions.forEach { gradleVersion ->
             Given("A basic project for version $gradleVersion") {
@@ -54,6 +55,8 @@ class EnsimePluginTest : BehaviorSpec() {
                             .build()
                     Then("The plugin should be enabled") {
                         result.output should include("Using Scala version 2.10.4")
+//                        File(rootDir, ".ensime").exists() shouldBe true
+//                        File(rootDir, ".ensime").readText() should include("(:scala-version \"2.10.4\")")
                     }
                 }
             }

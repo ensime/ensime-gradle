@@ -15,14 +15,13 @@
  */
 package org.ensime.gradle.model
 
-import org.ensime.gradle.extensions.ensimeServerVersion
-import org.ensime.gradle.extensions.findScalaVersion
-import java.io.File
+import org.ensime.gradle.EnsimePluginExtension
+import org.ensime.gradle.extensions.toSExp
 import java.nio.file.Path
 
 data class EnsimeConfig(
         val rootDir: Path
-        ,val cacheDir: Path
+//        ,val cacheDir: Path
         ,val scalaVersion: String
         ,val ensimeServerVersion: String
 //        ,val scalaCompilerJars: List<Path>
@@ -36,24 +35,20 @@ data class EnsimeConfig(
 //        ,val subProjects: List<SubProject>
 //        ,val projects: List<Project>
 ) {
+    fun toSExp(): String =
+            """|(:root-dir ${rootDir.toSExp}
+               | :scala-version ${scalaVersion.toSExp}
+               | :ensime-server-version ${ensimeServerVersion.toSExp}
+               |)""".trimMargin("|")
+
+
     companion object {
         val CACHE_DIR = ".ensime_cache"
 
-        fun fromGradleProject(project: org.gradle.api.Project) = EnsimeConfig(
-                rootDir = project.rootDir.toPath()
-                ,cacheDir = project.rootDir.toPath().resolve(CACHE_DIR)
-                ,scalaVersion = project.findScalaVersion()
-                ,ensimeServerVersion = project.ensimeServerVersion()
-//                ,scalaCompilerJars = TODO("Retrieve scala jars")
-//                ,ensimeServerJars = TODO("Retrieve ENSIME server jars")
-//                ,name = project.name
-//                ,javaHome = File(System.getProperty("java.home")).toPath()
-//                ,javaSources = TODO("Retrieve Java sources")
-//                ,javaCompilerArgs = TODO("Java compiler args")
-//                ,referenceSourceRoots = TODO("Reference source roots")
-//                ,compilerArgs = listOf()
-//                ,subProjects = listOf()
-//                ,projects = listOf()
+        fun build(extension: EnsimePluginExtension): EnsimeConfig = EnsimeConfig(
+                rootDir = extension.project.rootDir.toPath()
+                ,scalaVersion = extension.scalaVersion
+                ,ensimeServerVersion = extension.serverVersion
         )
     }
 }

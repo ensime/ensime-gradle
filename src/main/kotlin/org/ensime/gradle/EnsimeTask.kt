@@ -18,6 +18,8 @@ package org.ensime.gradle
 import org.ensime.gradle.model.EnsimeConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import java.io.File
+import java.nio.charset.StandardCharsets
 
 /**
  * Created by bcarlson on 7/2/17.
@@ -25,7 +27,10 @@ import org.gradle.api.tasks.TaskAction
 open class EnsimeTask : DefaultTask() {
     @TaskAction
     fun generateConfig() {
-        val taskConfig = project.extensions.getByType(EnsimePluginExtension::class.java)
-        val config = EnsimeConfig.fromGradleProject(project)
+        val taskConfig: EnsimePluginExtension = project.extensions.getByType(EnsimePluginExtension::class.java)
+        val config = EnsimeConfig.build(taskConfig)
+        val targetFile: File = taskConfig.ensimeFile
+
+        targetFile.writeText(config.toSExp(), StandardCharsets.UTF_8)
     }
 }
