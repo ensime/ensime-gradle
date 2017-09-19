@@ -15,41 +15,21 @@
  */
 package org.ensime.gradle.model
 
-import org.ensime.gradle.EnsimePluginExtension
-import org.ensime.gradle.extensions.toSExp
-import java.nio.file.Path
+import java.io.File
 
 data class EnsimeConfig(
-        val rootDir: Path
-//        ,val cacheDir: Path
+        val rootDir: File
+        ,val cacheDir: File
         ,val scalaVersion: String
         ,val ensimeServerVersion: String
 //        ,val scalaCompilerJars: List<Path>
 //        ,val ensimeServerJars: List<Path>
-//        ,val name: String
-//        ,val javaHome: Path
+        ,val name: String
+//        ,val javaHome: File
 //        ,val javaSources: List<Path>
 //        ,val javaCompilerArgs: List<String>
 //        ,val referenceSourceRoots: List<Path>
 //        ,val compilerArgs: List<String>
 //        ,val subProjects: List<SubProject>
 //        ,val projects: List<Project>
-) {
-    fun toSExp(): String =
-            """|(:root-dir ${rootDir.toSExp}
-               | :scala-version ${scalaVersion.toSExp}
-               | :ensime-server-version ${ensimeServerVersion.toSExp}
-               |)""".trimMargin("|")
-
-
-    companion object {
-        val CACHE_DIR = ".ensime_cache"
-
-        fun build(extension: EnsimePluginExtension): EnsimeConfig = EnsimeConfig(
-                rootDir = extension.project.rootDir.toPath()
-                ,scalaVersion = extension.scalaVersion
-                ,ensimeServerVersion = extension.serverVersion
-        )
-    }
-}
-
+)

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ensime.gradle.extensions
+package org.ensime.gradle
 
-data class SExp(val exp: String) {
+object EnsimeTestConfiguration {
+    val supportedVersions = listOf("3.1", "3.5", "4.1")
 }
-
-

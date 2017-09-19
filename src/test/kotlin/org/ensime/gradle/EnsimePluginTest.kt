@@ -15,49 +15,31 @@
  */
 package org.ensime.gradle
 
-import com.google.common.io.Files
-import io.kotlintest.matchers.include
+import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.matchers.should
-import io.kotlintest.matchers.shouldBe
-import io.kotlintest.specs.BehaviorSpec
-import org.gradle.testkit.runner.GradleRunner
-import java.io.File
+import io.kotlintest.matchers.shouldEqual
+import io.kotlintest.matchers.shouldNotBe
+import io.kotlintest.specs.FeatureSpec
+import org.gradle.testfixtures.ProjectBuilder
 
-class EnsimePluginTest : BehaviorSpec() {
-
+class EnsimePluginTest : FeatureSpec() {
     init {
-        val supportedVersions = listOf("2.8", "2.11", "3.1", "3.5", "4.0.1")
+        EnsimeTestConfiguration.supportedVersions.forEach { gradleVersion ->
+            feature("The ensime plugin in $gradleVersion") {
+                scenario("enables the ensime task") {
+                    val project = ProjectBuilder.builder().build()
+                    project.pluginManager.apply("org.ensime.gradle")
+                    project.extensions.findByName(EnsimePlugin.ENSIME_PLUGIN_NAME) shouldNotBe null
+                    project.tasks.findByName("ensime") should beInstanceOf(EnsimeTask::class)
+                }
+                scenario("can be updated with non-default values") {
+                    val project = ProjectBuilder.builder().build()
+                    project.pluginManager.apply("org.ensime.gradle")
+                    val ext = project.extensions.findByName(EnsimePlugin.ENSIME_PLUGIN_NAME) as? EnsimePluginExtension
+                    ext?.scalaVersion = "2.10.4"
 
-        supportedVersions.forEach { gradleVersion ->
-            Given("A basic project for version $gradleVersion") {
-                val rootDir = Files.createTempDir()
-                val buildFile = File(rootDir, "build.gradle")
-                buildFile.writeText("""
-                    |plugins {
-                    |  id 'scala'
-                    |  id 'org.ensime.gradle'
-                    |}
-                    |
-                    |repositories {
-                    |  mavenCentral()
-                    |}
-                    |
-                    |dependencies {
-                    |  compile 'org.scala-lang:scala-library:2.10.4'
-                    |}
-                    |""".trimMargin())
-                When("Executed") {
-                    val result = GradleRunner.create()
-                            .withGradleVersion(gradleVersion)
-                            .withProjectDir(rootDir)
-                            .withPluginClasspath()
-                            .withArguments("ensime", "--debug", "--stacktrace")
-                            .build()
-                    Then("The plugin should be enabled") {
-                        result.output should include("Using Scala version 2.10.4")
-//                        File(rootDir, ".ensime").exists() shouldBe true
-//                        File(rootDir, ".ensime").readText() should include("(:scala-version \"2.10.4\")")
-                    }
+                    ext?.scalaVersion shouldEqual "2.10.4"
+                    ext?.ensimeFile?.name shouldEqual EnsimePlugin.DEFAULT_ENSIME_FILE
                 }
             }
         }

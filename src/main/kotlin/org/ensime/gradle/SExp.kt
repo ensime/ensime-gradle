@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ensime.gradle.extensions
+package org.ensime.gradle
 
-data class SExp(val exp: String) {
-}
-
-
+data class SExp(val value: String)

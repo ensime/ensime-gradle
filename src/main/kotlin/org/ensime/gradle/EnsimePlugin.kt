@@ -20,16 +20,27 @@ import org.gradle.api.Project
 
 class EnsimePlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        with(project) {
-            extensions.create(ENSIME_PLUGIN_NAME, EnsimePluginExtension::class, project)
-            tasks.create(ENSIME_PLUGIN_NAME, EnsimeTask::class.java)
-        }
+        project.extensions.create(ENSIME_PLUGIN_NAME, EnsimePluginExtension::class.java, project)
+
+        project.configurations.create(ENSIME_PLUGIN_NAME)
+
+        project.tasks.create(ENSIME_PLUGIN_NAME, EnsimeTask::class.java)
+
     }
 
     companion object {
         val ENSIME_PLUGIN_NAME = "ensime"
-        val DEFAULT_SCALA_VERSION = "2.12.4"
-        val DEFAULT_SERVER_VERSION = "1.0.1"
+        val DEFAULT_SCALA_VERSION = "2.12.3"
+        val DEFAULT_SERVER_VERSION = "2.0.0-M4"
         val DEFAULT_ENSIME_FILE = ".ensime"
+        val DEFAULT_ENSIME_CACHE = ".ensime_cache"
+        val DEFAULT_SCALA_ORG = "org.scala-lang"
+
+        val DEFAULT_SCALA_LIBRARIES = setOf<String>(
+                "scalap",
+                "scala-compiler",
+                "scala-reflect",
+                "scala-library")
+
     }
 }

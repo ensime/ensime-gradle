@@ -16,25 +16,20 @@
 package org.ensime.gradle.extensions
 
 import org.ensime.gradle.EnsimePlugin
-import org.ensime.gradle.EnsimePluginExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.UnknownConfigurationException
 
-fun Project.findScalaVersion(): String? {
-    val extClass: Class<EnsimePluginExtension> = EnsimePluginExtension::class.java
-    val extension = extensions.getByType(extClass)
-    logger.debug("Found extension $extension")
-    val version = extractScalaVersion(this)
-    return version
-}
+fun Project.scalaDependencies(): Set<Dependency> {
+    fun scalaDependencies4(): Set<Dependency> = project.allprojects
+            .flatMap { it.configurations }
+            .filter { it.isCanBeResolved }
+            .flatMap { it.allDependencies }
+            .filter { EnsimePlugin.DEFAULT_SCALA_LIBRARIES.contains(it.name) }
+            .toSet()
 
-fun extractScalaVersion(project: Project): String? =
-        if (project.gradle.gradleVersion > "4") scalaVersion4(project)
-        else scalaVersionOld(project)
-
-fun scalaVersionOld(project: Project): String? =
-    listOf("compile", "testCompile", "play")
+    fun scalaDependenciesOld(): Set<Dependency> = listOf("compile", "testCompile", "play")
             .flatMap {
                 try {
                     listOf(project.configurations.getByName(it))
@@ -43,19 +38,17 @@ fun scalaVersionOld(project: Project): String? =
                 }
             }
             .flatMap { it.allDependencies }
-            .find { it.name == "scala-library" }
-            ?.version
+            .filter { EnsimePlugin.DEFAULT_SCALA_LIBRARIES.contains(it.name) }
+            .toSet()
 
 
-fun scalaVersion4(project: Project): String? =
-        project.configurations
-                .filter { it.isCanBeResolved }
-                .flatMap { it.allDependencies }
-                .find { it.name == "scala-library" }
-                ?.version
-
-fun Project.ensimeServerVersion() : String {
-    return extensions?.getByType(EnsimePluginExtension::class.java)
-            ?.serverVersion
-            ?: EnsimePlugin.DEFAULT_SERVER_VERSION
+    return if (project.gradle.gradleVersion > "4") scalaDependencies4()
+    else scalaDependenciesOld()
 }
+
+
+fun Set<Dependency>.findScalaVersion(): String? =
+        this.find { it.name == "scala-library" }?.version
+
+fun Set<Dependency>.findScalaOrg(): String? =
+        this.find { it.name == "scala-library" }?.group

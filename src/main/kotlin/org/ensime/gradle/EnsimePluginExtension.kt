@@ -16,27 +16,26 @@
 package org.ensime.gradle
 
 import org.gradle.api.Project
-import org.ensime.gradle.extensions.findScalaVersion
 import java.io.File
 
 open class EnsimePluginExtension(val project: Project) {
-    private var _scalaVersion: String? = null
-    var scalaVersion: String
-        get() = _scalaVersion ?: project.findScalaVersion() ?: EnsimePlugin.DEFAULT_SCALA_VERSION
-        set(value) { _scalaVersion = value }
+    var scalaVersion: String? = null
+    var scalaOrg: String? = null
+    var ensimeServerVersion: String = EnsimePlugin.DEFAULT_SERVER_VERSION
+    var ensimeFile: File = project.file(EnsimePlugin.DEFAULT_ENSIME_FILE)
+    var cacheDir: File = project.file(EnsimePlugin.DEFAULT_ENSIME_CACHE)
 
-    var serverVersion: String = EnsimePlugin.DEFAULT_SERVER_VERSION
-    var ensimeFile: File = File(EnsimePlugin.DEFAULT_ENSIME_FILE)
-
-//        ,var javaHome: Path? = Paths.get(System.getProperty("java.home"))
-//        ,var cacheDir: Path? = Paths.get("./ensime_cache")
-//        ,var serverJarsDir: Path? = Paths.get("build/ensime")
-//        ,var downloadSources: Boolean? = true
-//        ,var downloadJavadoc: Boolean? = true
+//    var javaHome: Path? = Paths.get(System.getProperty("java.home"))
+//    var serverJarsDir: Path? = Paths.get("build/ensime")
+//    var downloadSources: Boolean? = true
+//    var downloadJavadoc: Boolean? = true
 
     override fun toString() =
             """|${this.javaClass.canonicalName}
                |Scala version: $scalaVersion
-               |Server version: $serverVersion
-               """.trimMargin()
+               |Scala organization: $scalaOrg
+               |ENSIME Server Version: $ensimeServerVersion
+               |ENSIME Configuration file: $ensimeFile
+               |ENSIME Cache Directory: $cacheDir
+               |""".trimMargin()
 }
