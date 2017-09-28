@@ -46,9 +46,22 @@ fun Project.scalaDependencies(): Set<Dependency> {
     else scalaDependenciesOld()
 }
 
-
 fun Set<Dependency>.findScalaVersion(): String? =
         this.find { it.name == "scala-library" }?.version
 
 fun Set<Dependency>.findScalaOrg(): String? =
         this.find { it.name == "scala-library" }?.group
+
+object SExpression {
+    fun <A> from(list: List<A>, indent: Int = 0) =
+            if (list.isEmpty()) "nil"
+            else {
+                val spaces = (0..indent).map { " " }.joinToString("")
+                list.map { from(it) }.joinToString("\n$spaces")
+            }
+
+    fun <A> from(a: A, indent: Int = 0): String {
+        val spaces = (0..indent).map { " " }.joinToString("")
+        return "$spaces\"${a.toString()}\""
+    }
+}

@@ -21,6 +21,7 @@ import io.kotlintest.matchers.should
 import io.kotlintest.specs.BehaviorSpec
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 class EnsimePluginSpec : BehaviorSpec({
     EnsimeTestConfiguration.supportedVersions.forEach { gradleVersion ->
@@ -80,9 +81,12 @@ class EnsimePluginSpec : BehaviorSpec({
                         .build()
                 Then("The default Scala version should be used") {
                     result.output should include("Using Scala version ${EnsimePlugin.DEFAULT_SCALA_VERSION}")
+                    val output = File(rootDir, ".ensime").readText(StandardCharsets.UTF_8)
+                    output.contains(":scala-version 2.12.3")
                 }
             }
             When("the ENSIME server version is overridden") {
+
                 val rootDir = Files.createTempDir()
 
                 val buildFile = File(rootDir, "build.gradle")

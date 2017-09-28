@@ -22,10 +22,7 @@ class EnsimePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.extensions.create(ENSIME_PLUGIN_NAME, EnsimePluginExtension::class.java, project)
 
-        project.configurations.create(ENSIME_PLUGIN_NAME)
-
         project.tasks.create(ENSIME_PLUGIN_NAME, EnsimeTask::class.java)
-
     }
 
     companion object {

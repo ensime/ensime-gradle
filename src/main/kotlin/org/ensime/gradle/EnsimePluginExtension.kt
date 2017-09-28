@@ -17,18 +17,40 @@ package org.ensime.gradle
 
 import org.gradle.api.Project
 import java.io.File
+import java.nio.file.Paths
 
 open class EnsimePluginExtension(val project: Project) {
+    private fun defaultJavaHome(): File {
+        val home = File(System.getProperty("java.home"))
+        return if (home.name.equals("jre")) home.parentFile else home
+    }
+
+    private fun defaultJavaSources(): List<File> {
+        val home = File(System.getProperty("java.home"))
+        return listOf(home).filter { it.exists() }
+    }
+
     var scalaVersion: String? = null
     var scalaOrg: String? = null
     var ensimeServerVersion: String = EnsimePlugin.DEFAULT_SERVER_VERSION
     var ensimeFile: File = project.file(EnsimePlugin.DEFAULT_ENSIME_FILE)
     var cacheDir: File = project.file(EnsimePlugin.DEFAULT_ENSIME_CACHE)
+    var javaHome: File = defaultJavaHome()
+        set(home) {
+            if (!home.exists()) {
+                throw IllegalArgumentException("The specified java home directory [$home] does not exist")
+            } else if (listOf("bin/java", "bin/java.exe").filter { File(home, it).exists()}.isEmpty()) {
+                throw IllegalArgumentException("The specified java home directory [$home] does not point to a valid Java installation")
+            } else {
+                javaHome = home
+            }
+        }
+    var javaFlags: List<String> = listOf()
+    var javaSources: List<File> = defaultJavaSources()
 
-//    var javaHome: Path? = Paths.get(System.getProperty("java.home"))
-//    var serverJarsDir: Path? = Paths.get("build/ensime")
-//    var downloadSources: Boolean? = true
-//    var downloadJavadoc: Boolean? = true
+    var serverJarsDir: String = Paths.get("build/ensime").toString()
+    var downloadSources: Boolean = true
+    var downloadJavadoc: Boolean = true
 
     override fun toString() =
             """|${this.javaClass.canonicalName}
@@ -37,5 +59,6 @@ open class EnsimePluginExtension(val project: Project) {
                |ENSIME Server Version: $ensimeServerVersion
                |ENSIME Configuration file: $ensimeFile
                |ENSIME Cache Directory: $cacheDir
+               |Java Home Directory: $javaHome
                |""".trimMargin()
 }

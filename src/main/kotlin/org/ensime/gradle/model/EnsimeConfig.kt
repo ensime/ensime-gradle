@@ -15,21 +15,36 @@
  */
 package org.ensime.gradle.model
 
+import org.ensime.gradle.extensions.SExpression
 import java.io.File
 
-data class EnsimeConfig(
+data class
+EnsimeConfig(
         val rootDir: File
         ,val cacheDir: File
-        ,val scalaVersion: String
+        ,val scalaCompilerJars: List<File>
+        ,val ensimeServerJars: List<File>
         ,val ensimeServerVersion: String
-//        ,val scalaCompilerJars: List<Path>
-//        ,val ensimeServerJars: List<Path>
         ,val name: String
-//        ,val javaHome: File
-//        ,val javaSources: List<Path>
+        ,val javaHome: File
+        ,val javaFlags: List<String>
+        ,val javaSources: List<File>
 //        ,val javaCompilerArgs: List<String>
 //        ,val referenceSourceRoots: List<Path>
 //        ,val compilerArgs: List<String>
 //        ,val subProjects: List<SubProject>
 //        ,val projects: List<Project>
-)
+) {
+    fun toSExp(): String =
+            """|(:root-dir  ${SExpression.from(rootDir)}
+               | :cache-dir ${SExpression.from(cacheDir)}
+               | :scala-compiler-jars (${SExpression.from(scalaCompilerJars, 22)})
+               | :ensime-server-jars (${SExpression.from(ensimeServerJars, 21)})
+               | :name ${SExpression.from(name)}
+               | :java-home ${SExpression.from(javaHome)}
+               | :java-flags ${SExpression.from(javaFlags)}
+               | :java-sources ${SExpression.from(javaSources)}
+               | )""".trimMargin()
+
+    override fun toString(): String = toSExp()
+}

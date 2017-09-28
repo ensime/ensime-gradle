@@ -19,9 +19,11 @@ package org.ensime.gradle
 import org.ensime.gradle.extensions.findScalaOrg
 import org.ensime.gradle.extensions.findScalaVersion
 import org.ensime.gradle.extensions.scalaDependencies
+import org.ensime.gradle.model.EnsimeConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 /**
  * Created by bcarlson on 7/2/17.
@@ -70,8 +72,18 @@ open class EnsimeTask : DefaultTask() {
                 scalaDependencies.findScalaVersion() ?: EnsimePlugin.DEFAULT_SCALA_VERSION
         logger.debug("Using Scala version $scalaVersion")
 
-        val scalaJars: List<File> = resolveScalaJars(scalaOrg, scalaVersion)
+        val config = EnsimeConfig(
+                cacheDir = ext.cacheDir,
+                rootDir = project.rootDir,
+                scalaCompilerJars = resolveScalaJars(scalaOrg, scalaVersion),
+                ensimeServerJars =  resolveEnsimeJars(scalaVersion),
+                ensimeServerVersion = ext.ensimeServerVersion,
+                name = project.name,
+                javaHome = ext.javaHome,
+                javaFlags = ext.javaFlags,
+                javaSources = ext.javaSources
+        )
 
-        val ensimeJars = resolveEnsimeJars(scalaVersion)
+        ext.ensimeFile.writeText(config.toSExp(), StandardCharsets.UTF_8)
     }
 }
