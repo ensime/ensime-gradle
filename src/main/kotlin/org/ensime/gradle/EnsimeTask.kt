@@ -16,9 +16,7 @@
 
 package org.ensime.gradle
 
-import org.ensime.gradle.extensions.findScalaOrg
-import org.ensime.gradle.extensions.findScalaVersion
-import org.ensime.gradle.extensions.scalaDependencies
+import org.ensime.gradle.extensions.*
 import org.ensime.gradle.model.EnsimeConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -81,7 +79,11 @@ open class EnsimeTask : DefaultTask() {
                 name = project.name,
                 javaHome = ext.javaHome,
                 javaFlags = ext.javaFlags,
-                javaSources = ext.javaSources
+                javaSources = ext.javaSources,
+                javaCompilerArgs = project.javaCompilerArgs(),
+                scalaCompilerArgs = project.scalaCompilerArgs(),
+                scalaVersion = scalaVersion,
+                referenceSourceRoots = project.getReferenceSourceRoots()
         )
 
         ext.ensimeFile.writeText(config.toSExp(), StandardCharsets.UTF_8)

@@ -55,6 +55,9 @@ class EnsimePluginSpec : BehaviorSpec({
                 Then("The Scala version should be read from the configuration") {
                     result.output should include("Using Scala version 2.10.4")
                     result.output should include("org.ensime/server_2.10/2.0.0-M4")
+                    val ensime = File(rootDir, ".ensime").readText(StandardCharsets.UTF_8)
+                    ensime should include (":scala-version \"2.10.4\"")
+                    ensime should include (":java-compiler-args nil")
                 }
             }
             When("Used with a Java project") {
@@ -65,6 +68,10 @@ class EnsimePluginSpec : BehaviorSpec({
                     |plugins {
                     |  id 'java'
                     |  id 'org.ensime.gradle'
+                    |}
+                    |
+                    |tasks.withType(JavaCompile) {
+                    |   options.compilerArgs = ['-Xlint', '-Xmx4g']
                     |}
                     |
                     |repositories {
@@ -83,6 +90,7 @@ class EnsimePluginSpec : BehaviorSpec({
                     result.output should include("Using Scala version ${EnsimePlugin.DEFAULT_SCALA_VERSION}")
                     val output = File(rootDir, ".ensime").readText(StandardCharsets.UTF_8)
                     output.contains(":scala-version 2.12.3")
+                    output.contains(""":java-compiler-args ("-Xlint" "-Xmx4g")""")
                 }
             }
             When("the ENSIME server version is overridden") {

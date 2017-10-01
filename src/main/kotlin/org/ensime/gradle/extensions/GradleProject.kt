@@ -20,6 +20,16 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.UnknownConfigurationException
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.component.Artifact
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.scala.ScalaCompile
+import org.gradle.jvm.JvmLibrary
+import org.gradle.language.base.artifact.SourcesArtifact
+import org.gradle.language.java.artifact.JavadocArtifact
+import java.nio.file.Path
 
 fun Project.scalaDependencies(): Set<Dependency> {
     fun scalaDependencies4(): Set<Dependency> = project.allprojects
@@ -46,6 +56,44 @@ fun Project.scalaDependencies(): Set<Dependency> {
     else scalaDependenciesOld()
 }
 
+fun Project.javaCompilerArgs(): List<String> =
+        this.tasks.filterIsInstance(JavaCompile::class.java)
+                .filter { it.enabled }
+                .flatMap { it.options.compilerArgs }
+                .distinct()
+
+fun Project.scalaCompilerArgs(): List<String> =
+        this.tasks.filterIsInstance(ScalaCompile::class.java)
+                .filter { it.enabled }
+                .flatMap { it.options.compilerArgs }
+                .distinct()
+
+fun <T : Artifact> Project.getArtifacts(configuration: Configuration, clazz: Class<T>): List<ResolvedArtifactResult> {
+    val componentIds = configuration.incoming
+            .resolutionResult
+            .allDependencies
+            .filterIsInstance(ResolvedDependencyResult::class.java)
+            .map { it?.selected?.id }
+            .filterIsInstance(ModuleComponentIdentifier::class.java)
+
+    return this.dependencies
+            .createArtifactResolutionQuery()
+            .forComponents(componentIds)
+            .withArtifacts(JvmLibrary::class.java, clazz)
+            .execute()
+            .resolvedComponents
+            .flatMap { it.getArtifacts(clazz) }
+            .filterIsInstance(ResolvedArtifactResult::class.java)
+}
+
+fun Project.getReferenceSourceRoots(): List<Path> =
+        getArtifacts(this.configurations.getByName("testCompile"), SourcesArtifact::class.java)
+                .map { it.file.absoluteFile.toPath() }
+
+fun Project.getDocJars():List<Path> =
+        getArtifacts(project.configurations.getByName("testCompile"), JavadocArtifact::class.java)
+                .map { it.file.absoluteFile.toPath() }
+
 fun Set<Dependency>.findScalaVersion(): String? =
         this.find { it.name == "scala-library" }?.version
 
@@ -53,15 +101,14 @@ fun Set<Dependency>.findScalaOrg(): String? =
         this.find { it.name == "scala-library" }?.group
 
 object SExpression {
+    fun spaces(indent: Int): String = if (indent == 0) "" else (0..indent).map { " " }.joinToString("")
+
     fun <A> from(list: List<A>, indent: Int = 0) =
             if (list.isEmpty()) "nil"
             else {
-                val spaces = (0..indent).map { " " }.joinToString("")
-                list.map { from(it) }.joinToString("\n$spaces")
+                "(" + list.map { from(it) }.joinToString("\n${spaces(indent)}") + ")"
             }
 
-    fun <A> from(a: A, indent: Int = 0): String {
-        val spaces = (0..indent).map { " " }.joinToString("")
-        return "$spaces\"${a.toString()}\""
-    }
+    fun <A> from(a: A, indent: Int = 0): String =
+            """${spaces(indent)}"$a""""
 }

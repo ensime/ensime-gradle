@@ -25,10 +25,7 @@ open class EnsimePluginExtension(val project: Project) {
         return if (home.name.equals("jre")) home.parentFile else home
     }
 
-    private fun defaultJavaSources(): List<File> {
-        val home = File(System.getProperty("java.home"))
-        return listOf(home).filter { it.exists() }
-    }
+    private fun defaultJavaSources(): List<File> = listOf()
 
     var scalaVersion: String? = null
     var scalaOrg: String? = null
